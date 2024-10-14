@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "app.tsx",
+    "screens/**/*.tsx",
+    "types.ts"
+  ],
+  "extends": "expo/tsconfig.base"
+}
