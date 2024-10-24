@@ -1,5 +1,6 @@
 export type RootStackParamList = {
     Profile: undefined;
-    Chart: undefined;
+    Graph: undefined;
+    Bluetooth: undefined;
   };
   

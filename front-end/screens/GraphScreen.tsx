@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Dimensions, StyleSheet } from 'react-native';
 import { VictoryChart, VictoryLine } from 'victory-native';
+import Dropdown from 'react-native-element-dropdown';
 
 const ChartScreen: React.FC = () => {
   return (

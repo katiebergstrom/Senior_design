@@ -17,8 +17,12 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       <Text>Name: John Doe</Text>
       <Text>Email: john.doe@example.com</Text>
       <Button
+        title="Connect to bluetooth"
+        onPress={() => navigation.navigate('Bluetooth')}
+      />
+      <Button
         title="View Chart"
-        onPress={() => navigation.navigate('Chart')}
+        onPress={() => navigation.navigate('Graph')}
       />
     </View>
   );
