@@ -5,12 +5,17 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "typeRoots": ["./node_modules/@types", "./@types"]
+    "typeRoots": [
+      "./node_modules/@types",
+      "./@types"
+    ]
   },
   "include": [
     "app.tsx",
     "screens/**/*.tsx",
-    "types.ts"
+    "types.ts",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ],
   "extends": "expo/tsconfig.base"
 }
