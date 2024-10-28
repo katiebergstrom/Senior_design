@@ -1,6 +1,6 @@
 export type RootStackParamList = {
     Profile: undefined;
-    Graph: undefined;
+    Graph: { heartRateHistory: number[] }; 
     Bluetooth: undefined;
     CGM: undefined;
   };

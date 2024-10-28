@@ -22,7 +22,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       />
       <Button
         title="View Chart"
-        onPress={() => navigation.navigate('Graph')}
+        onPress={() => navigation.navigate('Graph', { heartRateHistory: [] })} // Replace [] with actual data if available
       />
     </View>
   );

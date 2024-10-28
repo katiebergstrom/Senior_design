@@ -2,7 +2,13 @@ import React from 'react';
 import { View, Dimensions, StyleSheet, SafeAreaView, Text } from 'react-native';
 import { VictoryChart, VictoryLine, VictoryArea, VictoryAxis } from 'victory-native';
 
-const GraphScreen: React.FC = () => {
+interface GraphScreenProps {
+  route: any;
+}
+
+const GraphScreen: React.FC<GraphScreenProps> = ({ route }) => {
+  const { heartRateHistory } = route.params;
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Glucose Rate Over Time</Text>
@@ -26,14 +32,10 @@ const GraphScreen: React.FC = () => {
         {/* Line Chart */}
         <VictoryLine
           style={{ data: { stroke: "#c43a31" } }}
-          data={[
-            { x: 0, y: 90 },
-            { x: 1, y: 85 },
-            { x: 2, y: 100 },
-            { x: 3, y: 140 },
-            { x: 4, y: 180 },
-            { x: 5, y: 125 }
-          ]}
+          data={heartRateHistory.map((rate: number, index: number) => ({
+            x: index + 1,
+            y: rate,
+          }))}
         />
 
         {/* Y-Axis */}
