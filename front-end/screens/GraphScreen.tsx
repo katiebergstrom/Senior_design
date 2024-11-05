@@ -1,41 +1,64 @@
-import React from 'react';
-import { View, Dimensions, StyleSheet, SafeAreaView, Text } from 'react-native';
-import { VictoryChart, VictoryLine, VictoryArea, VictoryAxis } from 'victory-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, SafeAreaView, Text } from 'react-native';
+import { VictoryChart, VictoryLine, VictoryAxis, VictoryGroup } from 'victory-native';
 
-interface GraphScreenProps {
-  route: any;
-}
+const GraphScreen: React.FC = () => {
+  // Initialize state with 40 random data points
+  const [glucoseData, setGlucoseData] = useState(generateRandomData());
 
-const GraphScreen: React.FC<GraphScreenProps> = ({ route }) => {
-  const { heartRateHistory } = route.params;
+  // Function to generate random glucose data every 3 minutes for a 2-hour period
+  function generateRandomData() {
+    const data = [];
+    for (let i = 0; i < 40; i++) {
+      data.push({
+        x: i * 3, // every 3 minutes
+        y: Math.floor(Math.random() * (180 - 70 + 1)) + 70, // random glucose rate between 70 and 180
+      });
+    }
+    return data;
+  }
+
+  // Add a new data point every 3 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGlucoseData((prevData) => {
+        const nextX = prevData[prevData.length - 1].x + 3;
+        const newDataPoint = {
+          x: nextX,
+          y: Math.floor(Math.random() * (180 - 70 + 1)) + 70,
+        };
+        // Keep only the latest 40 points
+        return [...prevData.slice(1), newDataPoint];
+      });
+    }, 180000); 
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Glucose Rate Over Time</Text>
-      <VictoryChart
-        domain={{ y: [0, 200] }} // Set the y-axis range
-      >
-        {/* Background Areas */}
-        <VictoryArea
-          style={{ data: { fill: "lightgreen" } }}
-          y={() => 100} // First color section up to 100
-        />
-        <VictoryArea
-          style={{ data: { fill: "lightyellow" } }}
-          y={() => 150} // Second color section from 100 to 150
-        />
-        <VictoryArea
-          style={{ data: { fill: "lightcoral" } }}
-          y={() => 200} // Third color section from 150 to 200
-        />
+      <VictoryChart domain={{ y: [0, 200] }}> {/* Set the y-axis range */}
+        {/* Background Color Bands */}
+        <VictoryGroup>
+          <VictoryLine
+            y={() => 100}
+            style={{ data: { stroke: "lightgreen", strokeWidth: 5 } }}
+          />
+          <VictoryLine
+            y={() => 150}
+            style={{ data: { stroke: "lightyellow", strokeWidth: 5 } }}
+          />
+          <VictoryLine
+            y={() => 200}
+            style={{ data: { stroke: "lightcoral", strokeWidth: 5 } }}
+          />
+        </VictoryGroup>
 
         {/* Line Chart */}
         <VictoryLine
-          style={{ data: { stroke: "#c43a31" } }}
-          data={heartRateHistory.map((rate: number, index: number) => ({
-            x: index + 1,
-            y: rate,
-          }))}
+          style={{ data: { stroke: "#c43a31" } }} // Color for the actual data line
+          data={glucoseData}
         />
 
         {/* Y-Axis */}
@@ -50,7 +73,12 @@ const GraphScreen: React.FC<GraphScreenProps> = ({ route }) => {
         />
 
         {/* X-Axis */}
-        <VictoryAxis label="Time" />
+        <VictoryAxis
+          label="Time (minutes)"
+          style={{
+            axisLabel: { padding: 25 },
+          }}
+        />
       </VictoryChart>
     </SafeAreaView>
   );

@@ -1,14 +1,9 @@
-// screens/ProfileScreen.tsx
 import React from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 
-type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Profile'>;
-
-type Props = {
-  navigation: ProfileScreenNavigationProp;
-};
+type Props = StackScreenProps<RootStackParamList, 'Profile'>;
 
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   return (
