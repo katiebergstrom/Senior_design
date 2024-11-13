@@ -10,11 +10,12 @@ import ProfileScreen from './screens/ProfileScreen';
 import ChartScreen from './screens/GraphScreen';
 import BluetoothScreen from './screens/BluetoothScreen';
 import CGMScreen from './screens/CGM';
+import UpdatedGraphScreen from './screens/UpdatedGraphScreen';
 import { RootStackParamList } from './types';
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator<RootStackParamList>();
-const APP_NAME = "MyApp";
+const APP_NAME = "Glucowizard";
 
 const CustomHeader: React.FC<{ title: string; navigation: any }> = ({ title, navigation }) => (
   <View style={styles.headerContainer}>
@@ -46,6 +47,7 @@ const App: React.FC = () => {
         <Drawer.Screen name="Graph" component={() => StackWithCustomHeader("Graph", ChartScreen)} />
         <Drawer.Screen name="Bluetooth" component={() => StackWithCustomHeader("Bluetooth", BluetoothScreen)} />
         <Drawer.Screen name="CGM" component={() => StackWithCustomHeader("CGM", CGMScreen)} />
+        <Drawer.Screen name="UpdatedGraph" component={() => StackWithCustomHeader("UpdatedGraph", UpdatedGraphScreen)} />
       </Drawer.Navigator>
     </NavigationContainer>
   );

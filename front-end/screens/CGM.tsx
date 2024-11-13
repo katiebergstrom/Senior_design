@@ -49,9 +49,9 @@ const App = () => {
     scanForDevices();
     setIsModalVisible(true);
   };
-
+  //changed this to UpdatedGraph or would be Graph
   const viewGraph = () => {
-    navigation.navigate("Graph", { heartRateHistory });
+    navigation.navigate("UpdatedGraph", { heartRateHistory });
   };
 
   return (
