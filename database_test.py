@@ -15,11 +15,11 @@ conn.commit()
 from datetime import datetime
 import random
 
-# Generate and insert fake data
+# fake data
 for _ in range(10):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    glucose_level = round(random.uniform(70, 180), 2)  # Random glucose level
-    device_id = "CGM123"  # Example device ID
+    glucose_level = round(random.uniform(70, 180), 2)  # random glucose level between 70 and 180
+    device_id = "CGM123" # this would be an example of a device ID like the real board
 
     cursor.execute('''
     INSERT INTO glucose_data (timestamp, glucose_level, device_id)
@@ -36,16 +36,16 @@ conn.commit()
 
 from datetime import timedelta
 
-two_hours_ago = datetime.now() - timedelta(hours=2)
-two_hours_ago_str = two_hours_ago.strftime("%Y-%m-%d %H:%M:%S")
+two_minutes_ago = datetime.now() - timedelta(minutes=2)
+two_minutes_ago_str = two_minutes_ago.strftime("%Y-%m-%d %H:%M:%S")
 
 cursor.execute('''
 SELECT * FROM glucose_data
 WHERE timestamp >= ?
-''', (two_hours_ago_str,))
+''', (two_minutes_ago_str,))
 
 recent_rows = cursor.fetchall()
-print("\nData from the last 2 hours:")
+print("\nData from the last 2 minutes:")
 for row in recent_rows:
     print(row)
 
