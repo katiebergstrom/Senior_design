@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -9,8 +9,6 @@ import {
 import DeviceModal from "../DeviceConnectionModal";
 import { PulseIndicator } from "../PulseIndicator";
 import useBLE from "../useBLE";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { RootStackParamList } from "../types";
 
 const App = () => {
   const {
@@ -23,16 +21,6 @@ const App = () => {
     disconnectFromDevice,
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [heartRateHistory, setHeartRateHistory] = useState<number[]>([]); //list to keep track
-
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
-  // Append the new heart rate to history whenever it updates
-  useEffect(() => {
-    if (heartRate !== null) {
-      setHeartRateHistory((prev) => [...prev, heartRate]);
-    }
-  }, [heartRate]);
 
   const scanForDevices = async () => {
     const isPermissionsEnabled = await requestPermissions();
@@ -48,10 +36,6 @@ const App = () => {
   const openModal = async () => {
     scanForDevices();
     setIsModalVisible(true);
-  };
-  //changed this to UpdatedGraph or would be Graph
-  const viewGraph = () => {
-    navigation.navigate("UpdatedGraph", { heartRateHistory });
   };
 
   return (
@@ -77,11 +61,6 @@ const App = () => {
           {connectedDevice ? "Disconnect" : "Connect"}
         </Text>
       </TouchableOpacity>
-      {heartRateHistory.length > 0 && (
-        <TouchableOpacity onPress={viewGraph} style={styles.ctaButton}>
-          <Text style={styles.ctaButtonText}>View Glucose History</Text>
-        </TouchableOpacity>
-      )}
       <DeviceModal
         closeModal={hideModal}
         visible={isModalVisible}

@@ -13,7 +13,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       <Text>Email: john.doe@example.com</Text>
       <Button
         title="Connect to bluetooth"
-        onPress={() => navigation.navigate('Bluetooth')}
+        onPress={() => navigation.navigate('CGM')}
       />
       <Button
         title="View Chart"

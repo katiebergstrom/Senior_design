@@ -8,7 +8,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 import ProfileScreen from './screens/ProfileScreen';
 import ChartScreen from './screens/GraphScreen';
-import BluetoothScreen from './screens/BluetoothScreen';
+//import BluetoothScreen from './screens/BluetoothScreen';
 import CGMScreen from './screens/CGM';
 import UpdatedGraphScreen from './screens/UpdatedGraphScreen';
 import { RootStackParamList } from './types';
@@ -45,7 +45,7 @@ const App: React.FC = () => {
       <Drawer.Navigator initialRouteName="Profile">
         <Drawer.Screen name="Profile" component={() => StackWithCustomHeader("Profile", ProfileScreen)} />
         <Drawer.Screen name="Graph" component={() => StackWithCustomHeader("Graph", ChartScreen)} />
-        <Drawer.Screen name="Bluetooth" component={() => StackWithCustomHeader("Bluetooth", BluetoothScreen)} />
+        {/* <Drawer.Screen name="Bluetooth" component={() => StackWithCustomHeader("Bluetooth", BluetoothScreen)} /> */}
         <Drawer.Screen name="CGM" component={() => StackWithCustomHeader("CGM", CGMScreen)} />
         <Drawer.Screen name="UpdatedGraph" component={() => StackWithCustomHeader("UpdatedGraph", UpdatedGraphScreen)} />
       </Drawer.Navigator>
