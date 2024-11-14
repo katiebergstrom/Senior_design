@@ -1,4 +1,3 @@
-/* eslint-disable no-bitwise */
 import { useMemo, useState } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
 import {
@@ -13,23 +12,26 @@ import * as ExpoDevice from "expo-device";
 import base64 from "react-native-base64";
 
 const GLUCO_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const GLUCO_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+const GLUCO_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const GLUCO_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
 
 interface BluetoothLowEnergyApi {
   requestPermissions(): Promise<boolean>;
   scanForPeripherals(): void;
+  transmitData: (device: Device) => Promise<void>;
   connectToDevice: (deviceId: Device) => Promise<void>;
   disconnectFromDevice: () => void;
   connectedDevice: Device | null;
   allDevices: Device[];
-  heartRate: number;
+  glucoseRate: number;
 }
 
 function useBLE(): BluetoothLowEnergyApi {
   const bleManager = useMemo(() => new BleManager(), []);
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
-  const [heartRate, setHeartRate] = useState<number>(0);
+  const [glucoseRate, setglucoseRate] = useState<number>(0);
 
   const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
@@ -112,6 +114,7 @@ function useBLE(): BluetoothLowEnergyApi {
       await deviceConnection.discoverAllServicesAndCharacteristics();
       bleManager.stopDeviceScan();
       startStreamingData(deviceConnection);
+
     } catch (e) {
       console.log("FAILED TO CONNECT", e);
     }
@@ -121,11 +124,11 @@ function useBLE(): BluetoothLowEnergyApi {
     if (connectedDevice) {
       bleManager.cancelDeviceConnection(connectedDevice.id);
       setConnectedDevice(null);
-      setHeartRate(0);
+      setglucoseRate(0);
     }
   };
 
-  const onHeartRateUpdate = (
+  const onglucoseRateUpdate = (
     error: BleError | null,
     characteristic: Characteristic | null
   ) => {
@@ -138,32 +141,45 @@ function useBLE(): BluetoothLowEnergyApi {
     }
 
     const rawData = base64.decode(characteristic.value);
-    let innerHeartRate: number = -1;
+    //console.log("rawData= ", rawData);
 
-    const firstBitValue: number = Number(rawData) & 0x01;
-
-    /*if (firstBitValue === 0) {
-      innerHeartRate = rawData[1].charCodeAt(0);
-    } else {
-      innerHeartRate =
-        Number(rawData[1].charCodeAt(0) << 8) +
-        Number(rawData[2].charCodeAt(2));
-    }
-*/
-    setHeartRate(innerHeartRate);
+    setglucoseRate(+rawData);
   };
 
   const startStreamingData = async (device: Device) => {
     if (device) {
       device.monitorCharacteristicForService(
         GLUCO_UUID,
-        GLUCO_CHARACTERISTIC,
-        onHeartRateUpdate
+        GLUCO_RX_CHARACTERISTIC,
+        onglucoseRateUpdate
       );
     } else {
       console.log("No Device Connected");
     }
   };
+
+
+  const transmitData = async (device: Device) => {
+    if (device && connectedDevice) {
+      try {
+        // Writing data to the characteristic
+        const disconnect = "1116";
+        const bytes = base64.encode(disconnect);
+        await device.writeCharacteristicWithoutResponseForService(
+          GLUCO_UUID,
+          GLUCO_TX_CHARACTERISTIC,
+          bytes
+        );
+
+        console.log(`Data transmitted: ${bytes}`);
+      } catch (error) {
+        console.log("Error transmitting data:", error);
+      }
+    } else {
+      console.log("No device connected or device is not ready.");
+    }
+  };
+
 
   return {
     scanForPeripherals,
@@ -172,7 +188,8 @@ function useBLE(): BluetoothLowEnergyApi {
     allDevices,
     connectedDevice,
     disconnectFromDevice,
-    heartRate,
+    glucoseRate,
+    transmitData,
   };
 }
 
