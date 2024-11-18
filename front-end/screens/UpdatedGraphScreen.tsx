@@ -4,7 +4,7 @@ import { VictoryChart, VictoryLine, VictoryAxis, VictoryGroup } from "victory-na
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../types";
 
-const GraphScreen: React.FC = () => {
+const UpdatedGraphScreen: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "Graph">>();
   const { heartRateHistory } = route.params; // Access heart rate history from navigation
   const [glucoseData, setGlucoseData] = useState(
@@ -89,4 +89,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GraphScreen;
+export default UpdatedGraphScreen;
