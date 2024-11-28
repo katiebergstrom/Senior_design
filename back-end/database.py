@@ -47,3 +47,13 @@ def find_gap():
         if (timestamps[i] - timestamps[i - 1]).total_seconds() > 180:  # Gap > 3 minutes
             gaps.append((timestamps[i - 1], timestamps[i]))
     return gaps
+
+def get_data_for_last_hours(hours=2):
+    conn = sqlite3.connect('glucose_data.db')
+    cursor = conn.cursor()
+    cutoff = datetime.now() - timedelta(hours=hours)
+    cutoff_str = cutoff.strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute('SELECT * FROM glucose_data WHERE timestamp >= ?', (cutoff_str,))
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
