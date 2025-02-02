@@ -47,11 +47,19 @@ const App = () => {
   const handleTransmitData = (event: any) => {
     // Call the async function but don't return a promise
     if (connectedDevice) {
-      transmitData(connectedDevice).catch((error) => console.log("Error transmitting data:", error));
+      transmitData(connectedDevice, 'disconnect').catch((error) => console.log("Error transmitting data:", error));
     } else {
       console.log("No device connected");
     }
   };
+
+  const handleStartReading = (event: GestureResponderEvent) => {
+    if (connectedDevice) {
+      transmitData(connectedDevice, 'start').catch((error) => console.log("Error transmitting data:", error));
+    } else {
+      console.log("No device connected");
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -83,6 +91,10 @@ const App = () => {
         <Text style={styles.ctaButtonText}>
           {connectedDevice ? "Disconnect" : "Connect"}
         </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleStartReading} style={styles.ctaButton}>
+        <Text style={styles.ctaButtonText}>Start Reading</Text>
       </TouchableOpacity>
 
       <Button title="Transmit Data" onPress={handleTransmitData} />  

@@ -18,7 +18,7 @@ const GLUCO_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 interface BluetoothLowEnergyApi {
   requestPermissions(): Promise<boolean>;
   scanForPeripherals(): void;
-  transmitData: (device: Device) => Promise<void>;
+  transmitData: (device: Device, action: 'start' | 'disconnect') => Promise<void>;
   connectToDevice: (deviceId: Device) => Promise<void>;
   disconnectFromDevice: () => void;
   connectedDevice: Device | null;
@@ -175,12 +175,22 @@ function useBLE(): BluetoothLowEnergyApi {
   };
 
 
-  const transmitData = async (device: Device) => {
+  const transmitData = async (device: Device, action: 'start' | 'disconnect') => {
     if (device && connectedDevice) {
       try {
+        let code: string;
         // Writing data to the characteristic
-        const disconnect = "1116";
-        const bytes = base64.encode(disconnect);
+        if (action === 'start') {
+          code = "2025/02/02/04/15/00"
+        }
+        else if (action === 'disconnect') {
+          code = "1116";
+        }
+        else {
+          console.log("Invalid action");
+          return;
+        }
+        const bytes = base64.encode(code);
         await device.writeCharacteristicWithoutResponseForService(
           GLUCO_UUID,
           GLUCO_TX_CHARACTERISTIC,
