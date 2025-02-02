@@ -1,5 +1,4 @@
 pluginManagement {
-  //includeBuild("../node_modules/@react-native/gradle-plugin")
   def version = providers.exec {
     commandLine("node", "-e", "console.log(require('react-native/package.json').version);")
   }.standardOutput.asText.get().trim()
@@ -12,7 +11,6 @@ pluginManagement {
 }
 
 plugins { id("com.facebook.react.settings") }
-//extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
 
 def getRNMinorVersion() {
   def version = providers.exec {
