@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { VictoryChart, VictoryLine, VictoryScatter, VictoryAxis, VictoryGroup } from 'victory-native';
 
 interface GlucoseGraphProps {
-  data: { x: number; y: number }[];
+  data: { x: string; y: number }[];
 }
 
 const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {

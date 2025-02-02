@@ -24,7 +24,7 @@ interface BluetoothLowEnergyApi {
   connectedDevice: Device | null;
   allDevices: Device[];
   glucoseRate: number;
-  glucoseHistory: { x: number; y: number }[];
+  glucoseHistory: { x: string; y: number }[];
 }
 
 function useBLE(): BluetoothLowEnergyApi {
@@ -32,7 +32,7 @@ function useBLE(): BluetoothLowEnergyApi {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [glucoseRate, setglucoseRate] = useState<number>(0);
-  const [glucoseHistory, setGlucoseHistory] = useState<{ x: number; y: number }[]>([]);
+  const [glucoseHistory, setGlucoseHistory] = useState<{ x: string; y: number }[]>([]);
 
   const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
@@ -140,26 +140,34 @@ function useBLE(): BluetoothLowEnergyApi {
       console.log("No Data was recieved");
       return -1;
     }
-
+    try {
     const rawData = base64.decode(characteristic.value);
     //console.log("rawData= ", rawData);
 
-    setglucoseRate(+rawData);
+    //setglucoseRate(+rawData);
+    console.log("rawData= ", rawData);
+
+    const parts = rawData.split(',');
+    if (parts.length < 3) {
+      console.log("Invalid data format");
+      return;
+    }
+    
+    const time = parts[0];
+    const glucoseLevel = +parts[1];
+
+    setglucoseRate(glucoseLevel);
 
     setGlucoseHistory((prev) => {
-      const interval = 3; // Assuming a 3-minute interval
-      const nextX = prev.length > 0 ? prev[prev.length - 1].x + interval : 0;
-  
-      const newDataPoint = { x: nextX, y: +rawData };
-  
-      // Ensure always 40 points, shifting x values back if necessary
-      const updatedHistory = [...prev, newDataPoint].map((point, index, array) => {
-        const offset = array.length > 40 ? array[array.length - 40].x : 0;
-        return { ...point, x: point.x - offset };
-      });
-  
-      return updatedHistory.slice(-40); // Keep only the latest 40 points
+      const newDataPoint = { x: time, y: glucoseLevel };
+
+      const updatedHistory = [...prev, newDataPoint].slice(-40);
+
+      return updatedHistory;
     });
+  } catch (e) {
+    console.log("Error decoding data:", e);
+  }
   };
 
   const startStreamingData = async (device: Device) => {
@@ -205,6 +213,7 @@ function useBLE(): BluetoothLowEnergyApi {
       console.log("No device connected or device is not ready.");
     }
   };
+  
 
 
   return {
