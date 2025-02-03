@@ -8,7 +8,10 @@ interface GlucoseGraphProps {
 
 const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
   return (
-    <VictoryChart domain={{ x: [0, 120], y: [990, 1200] }}>
+    <VictoryChart 
+      domain={{ x: [0, 120], y: [990, 1200] }}
+      domainPadding={10}
+    >
       <VictoryGroup>
         <VictoryLine y={() => 1000} style={{ data: { stroke: "lightgreen", strokeWidth: 5 } }} />
         <VictoryLine y={() => 1100} style={{ data: { stroke: "lightyellow", strokeWidth: 5 } }} />

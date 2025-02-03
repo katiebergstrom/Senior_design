@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import RNFS from "react-native-fs"
 import {
   Button,
   GestureResponderEvent,
@@ -24,9 +25,20 @@ const App = () => {
     glucoseRate,
     glucoseHistory,
     disconnectFromDevice,
+    appendDataToFile,
+    readDataFromFile, 
     transmitData,
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    const loadGlucoseData = async () => {
+      const data = await readDataFromFile();
+      console.log("Loaded glucose history:", data);
+    };
+
+    loadGlucoseData();
+  }, []);
 
   const scanForDevices = async () => {
     const isPermissionsEnabled = await requestPermissions();
@@ -59,7 +71,7 @@ const App = () => {
     } else {
       console.log("No device connected");
     }
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -77,7 +89,6 @@ const App = () => {
         )}
       </View>
 
-        {/* Add the graph below the glucose reading */}
       {connectedDevice && (
         <View style={styles.graphContainer}>
           <GraphComponent data={glucoseHistory} />

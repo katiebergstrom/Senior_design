@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
+import RNFS from "react-native-fs"
 import {
   BleError,
   BleManager,
@@ -14,6 +15,7 @@ import base64 from "react-native-base64";
 const GLUCO_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const GLUCO_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 const GLUCO_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+const FILE_PATH = RNFS.DocumentDirectoryPath + "/glucose_data.json";
 
 interface BluetoothLowEnergyApi {
   requestPermissions(): Promise<boolean>;
@@ -21,6 +23,8 @@ interface BluetoothLowEnergyApi {
   transmitData: (device: Device, action: 'start' | 'disconnect') => Promise<void>;
   connectToDevice: (deviceId: Device) => Promise<void>;
   disconnectFromDevice: () => void;
+  appendDataToFile: (data: any) => void;
+  readDataFromFile: () => void;
   connectedDevice: Device | null;
   allDevices: Device[];
   glucoseRate: number;
@@ -129,6 +133,52 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+  const appendDataToFile = async (data: any) => {
+    try {
+      const fileExists = await RNFS.exists(FILE_PATH);
+      let fileContents = "[]";
+
+      if (fileExists) {
+        fileContents = await RNFS.readFile(FILE_PATH, "utf8");
+      }
+
+      const jsonData = JSON.parse(fileContents);
+      jsonData.push(data);
+
+      await RNFS.writeFile(FILE_PATH, JSON.stringify(jsonData, null, 2), "utf8");
+
+      console.log("Data appended to file:", data);
+    }
+    catch (error) {
+      console.log("Error writing to file:", error)
+    }
+  }
+
+  const readDataFromFile = async () => {
+    try {
+      const fileExists = await RNFS.exists(FILE_PATH);
+      if (!fileExists) {
+        console.log("File does not exist. Returning empty array.");
+        setGlucoseHistory([]); 
+        return;
+      }
+  
+      const fileContents = await RNFS.readFile(FILE_PATH, "utf8");
+      const parsedData = JSON.parse(fileContents);
+  
+      const formattedData = parsedData.map((entry: any) => ({
+        x: entry.time,
+        y: entry.glucoseLevel,
+      }));
+  
+      setGlucoseHistory(formattedData);
+    } catch (error) {
+      console.log("Error reading file:", error);
+      setGlucoseHistory([]); 
+    }
+  };
+  
+
   const onglucoseRateUpdate = (
     error: BleError | null,
     characteristic: Characteristic | null
@@ -155,6 +205,10 @@ function useBLE(): BluetoothLowEnergyApi {
     
     const time = parts[0];
     const glucoseLevel = +parts[1];
+    const batteryLevel = parts[2]
+
+    const newData = { time, glucoseLevel, batteryLevel }
+    appendDataToFile(newData);
 
     setglucoseRate(glucoseLevel);
 
@@ -223,6 +277,8 @@ function useBLE(): BluetoothLowEnergyApi {
     allDevices,
     connectedDevice,
     disconnectFromDevice,
+    appendDataToFile,
+    readDataFromFile, 
     glucoseRate,
     glucoseHistory,
     transmitData,
