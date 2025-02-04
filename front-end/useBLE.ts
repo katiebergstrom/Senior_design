@@ -29,6 +29,7 @@ interface BluetoothLowEnergyApi {
   allDevices: Device[];
   glucoseRate: number;
   glucoseHistory: { x: string; y: number }[];
+  clearFileContents: () => void;
 }
 
 function useBLE(): BluetoothLowEnergyApi {
@@ -243,7 +244,7 @@ function useBLE(): BluetoothLowEnergyApi {
         let code: string;
         // Writing data to the characteristic
         if (action === 'start') {
-          code = "2025/02/02/04/15/00"
+          code = "2025/02/02/04/30/00"
         }
         else if (action === 'disconnect') {
           code = "1116";
@@ -268,7 +269,16 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
   
-
+  const clearFileContents = async () => {
+    try {
+      const filePath = `${RNFS.DocumentDirectoryPath}/glucose_data.json`;
+      await RNFS.writeFile(filePath, JSON.stringify([]), 'utf8'); // Overwrite with empty array
+      setGlucoseHistory([]);
+      console.log("File contents cleared");
+    } catch (error) {
+      console.error("Error clearing file contents:", error);
+    }
+  };  
 
   return {
     scanForPeripherals,
@@ -282,6 +292,7 @@ function useBLE(): BluetoothLowEnergyApi {
     glucoseRate,
     glucoseHistory,
     transmitData,
+    clearFileContents,
   };
 }
 

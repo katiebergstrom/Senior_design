@@ -28,13 +28,20 @@ const App = () => {
     appendDataToFile,
     readDataFromFile, 
     transmitData,
+    clearFileContents,
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     const loadGlucoseData = async () => {
       const data = await readDataFromFile();
-      console.log("Loaded glucose history:", data);
+      if (Array.isArray(data)) {
+        const updatedData = data.slice(-40)
+        console.log("Loaded glucose history:", data);
+      }
+      else {
+        console.log("Invalid data read")
+      }
     };
 
     loadGlucoseData();
@@ -106,6 +113,10 @@ const App = () => {
 
       <TouchableOpacity onPress={handleStartReading} style={styles.ctaButton}>
         <Text style={styles.ctaButtonText}>Start Reading</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={clearFileContents} style={styles.ctaButton}>
+        <Text style={styles.ctaButtonText}>Clear file contents</Text>
       </TouchableOpacity>
 
       <Button title="Transmit Data" onPress={handleTransmitData} />  
