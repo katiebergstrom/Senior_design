@@ -29,6 +29,7 @@ const App = () => {
     readDataFromFile, 
     transmitData,
     clearFileContents,
+    batteryStatus
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
@@ -82,6 +83,9 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View>
+        <Text>Battery Level: {batteryStatus}%</Text>
+      </View>
       <View style={styles.glucoseRateTitleWrapper}>
         {connectedDevice ? (
           <>

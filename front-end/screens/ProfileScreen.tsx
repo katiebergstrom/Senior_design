@@ -11,14 +11,12 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       <Text style={styles.title}>Profile Information</Text>
       <Text>Name: John Doe</Text>
       <Text>Email: john.doe@example.com</Text>
-      <Button
-        title="Connect to bluetooth"
-        onPress={() => navigation.navigate('CGM')}
-      />
-      <Button
-        title="View Chart"
-        onPress={() => navigation.navigate('Graph', { heartRateHistory: [] })} // Replace [] with actual data if available
-      />
+      <View style={styles.button}>
+        <Button
+          title="Connect to Bluetooth"
+          onPress={() => navigation.navigate('CGM')}
+        />
+      </View>
     </View>
   );
 };
@@ -34,6 +32,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
+  button: {
+    paddingTop: 25
+  }
 });
 
 export default ProfileScreen;

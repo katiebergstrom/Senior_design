@@ -16,19 +16,24 @@ const convertTimeToSec = (timeStr : string): number => {
   return hours * 3600 + minutes * 60 + seconds;
 };
 
-const START_TIME_SEC = convertTimeToSec("04:30:00"); // Hardcode graph to start at 4:30 for now
+//const START_TIME_SEC = convertTimeToSec("04:30:00"); // Hardcode graph to start at 4:30 for now
 const TIME_WINDOW = 120; // Show 2 minutes worth of data (120 seconds), hardcoded for now
 
 const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
   const processedData = data.slice(-40).map(entry => ({
-    x : convertTimeToSec(entry.x) - START_TIME_SEC,
+    x : convertTimeToSec(entry.x),
     y : entry.y
   })
-  )
+  ).filter(entry => !isNaN(entry.x));
+
+  if (processedData.length === 0) return null;
+
+  const latestTime = processedData[processedData.length - 1].x;
+  const earliestTime = latestTime - TIME_WINDOW;
 
   return (
     <VictoryChart 
-      domain={{ x: [0, TIME_WINDOW], y: [990, 1200] }} // X-axis starts from 0 to 120 (2 minutes)
+      domain={{ x: [earliestTime, latestTime], y: [990, 1200] }} // X-axis starts from 0 to 120 (2 minutes)
       domainPadding={10}
     >
       <VictoryGroup>
@@ -36,7 +41,6 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
         <VictoryLine y={() => 1100} style={{ data: { stroke: "lightyellow", strokeWidth: 5 } }} />
         <VictoryLine y={() => 1200} style={{ data: { stroke: "lightcoral", strokeWidth: 5 } }} />
       </VictoryGroup>
-      {/* Line for continuous data */}
       <VictoryLine
           style={{ data: { stroke: "#c43a31" } }} // Color for the line
           data={processedData}
@@ -49,7 +53,6 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
           data={processedData}
         />
 
-        {/* Axes */}
         <VictoryAxis
           dependentAxis
           label="Glucose Rate (mg/dL)"
@@ -59,10 +62,10 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
         label="Time (HH:MM)"
         style={{ axisLabel: { padding: 25 } }}
         tickFormat={(tick) => {
-          const actualTime = tick + START_TIME_SEC; // Convert back to absolute time
-          if (isNaN(actualTime)) return "00:00";
-          const hours = Math.floor(actualTime / 3600);
-          const minutes = Math.floor((actualTime % 3600) / 60);
+          //const actualTime = tick + START_TIME_SEC; // Convert back to absolute time
+          //if (isNaN(actualTime)) return "00:00";
+          const hours = Math.floor(tick / 3600);
+          const minutes = Math.floor((tick % 3600) / 60);
           return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
         }}
       />

@@ -29,6 +29,7 @@ interface BluetoothLowEnergyApi {
   allDevices: Device[];
   glucoseRate: number;
   glucoseHistory: { x: string; y: number }[];
+  batteryStatus: String;
   clearFileContents: () => void;
 }
 
@@ -38,6 +39,7 @@ function useBLE(): BluetoothLowEnergyApi {
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [glucoseRate, setglucoseRate] = useState<number>(0);
   const [glucoseHistory, setGlucoseHistory] = useState<{ x: string; y: number }[]>([]);
+  const [batteryStatus, setBatteryStatus] = useState<string>("");
 
   const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
@@ -206,12 +208,13 @@ function useBLE(): BluetoothLowEnergyApi {
     
     const time = parts[0];
     const glucoseLevel = +parts[1];
-    const batteryLevel = parts[2]
+    const batteryLevel = parts[2];
 
     const newData = { time, glucoseLevel, batteryLevel }
     appendDataToFile(newData);
 
     setglucoseRate(glucoseLevel);
+    setBatteryStatus(batteryLevel);
 
     setGlucoseHistory((prev) => {
       const newDataPoint = { x: time, y: glucoseLevel };
@@ -293,6 +296,7 @@ function useBLE(): BluetoothLowEnergyApi {
     glucoseHistory,
     transmitData,
     clearFileContents,
+    batteryStatus,
   };
 }
 
