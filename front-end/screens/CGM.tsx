@@ -33,11 +33,14 @@ const App = () => {
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
+  // const [glucoseData, setGlucoseData] = useState<number[]>([]);
+
   useEffect(() => {
     const loadGlucoseData = async () => {
       const data = await readDataFromFile();
       if (Array.isArray(data)) {
         const updatedData = data.slice(-40)
+        // setGlucoseData(updatedData)
         console.log("Loaded glucose history:", data);
       }
       else {
@@ -100,11 +103,9 @@ const App = () => {
         )}
       </View>
 
-      {connectedDevice && (
-        <View style={styles.graphContainer}>
-          <GraphComponent data={glucoseHistory} />
-        </View>
-      )}
+      <View style={styles.graphContainer}>
+        <GraphComponent data={glucoseHistory} />
+      </View>
 
       <TouchableOpacity
         onPress={connectedDevice ? disconnectFromDevice : openModal}
