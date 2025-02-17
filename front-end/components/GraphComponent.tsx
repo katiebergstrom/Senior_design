@@ -16,7 +16,6 @@ const convertTimeToSec = (timeStr : string): number => {
   return hours * 3600 + minutes * 60 + seconds;
 };
 
-//const START_TIME_SEC = convertTimeToSec("04:30:00"); // Hardcode graph to start at 4:30 for now
 const TIME_WINDOW = 120; // Show 2 minutes worth of data (120 seconds), hardcoded for now
 
 const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
@@ -28,12 +27,13 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
 
   if (processedData.length === 0) return null;
 
+  const firstDataPoint = processedData[0].x;
   const latestTime = processedData[processedData.length - 1].x;
-  const earliestTime = latestTime - TIME_WINDOW;
+  const earliestTime = Math.max(firstDataPoint, latestTime - TIME_WINDOW);
 
   return (
     <VictoryChart 
-      domain={{ x: [earliestTime, latestTime], y: [990, 1200] }} // X-axis starts from 0 to 120 (2 minutes)
+      domain={{ x: [earliestTime, earliestTime + TIME_WINDOW], y: [990, 1200] }} // X-axis starts from 0 to 120 (2 minutes)
       domainPadding={10}
     >
       <VictoryGroup>
@@ -46,7 +46,6 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
           data={processedData}
         />
 
-        {/* Points for each data value */}
         <VictoryScatter
           style={{ data: { fill: "#c43a31" } }} // Color for the points
           size={4} // Size of each point
@@ -56,17 +55,28 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
         <VictoryAxis
           dependentAxis
           label="Glucose Rate (mg/dL)"
-          style={{ axisLabel: { padding: 35 } }}
+          style={{ 
+            axisLabel: { padding: 38 },  
+            tickLabels: { padding: 0 },  
+          }}
         />
         <VictoryAxis
         label="Time (HH:MM)"
-        style={{ axisLabel: { padding: 25 } }}
+        style={{ 
+          axisLabel: { padding: 25 },  
+          tickLabels: { padding: 5 },  
+        }}
         tickFormat={(tick) => {
-          //const actualTime = tick + START_TIME_SEC; // Convert back to absolute time
-          //if (isNaN(actualTime)) return "00:00";
-          const hours = Math.floor(tick / 3600);
           const minutes = Math.floor((tick % 3600) / 60);
-          return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+          const seconds = tick % 60;
+      
+          // Only show labels if seconds == 0 
+          if (seconds === 0) {
+            const hours = Math.floor(tick / 3600);
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+          } else {
+            return ''; 
+          }
         }}
       />
     </VictoryChart>
