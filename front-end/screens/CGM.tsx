@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Device } from "react-native-ble-plx";
 import DeviceModal from "../DeviceConnectionModal";
-import { PulseIndicator } from "../PulseIndicator";
+import { GlucoseArrow } from "../PulseIndicator";
 import useBLE from "../useBLE";
 import GraphComponent from "../components/GraphComponent"
 
@@ -86,16 +86,16 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View>
+      <View style={styles.batteryDisplay}>
         <Text>Battery Level: {batteryStatus}%</Text>
       </View>
       <View style={styles.glucoseRateTitleWrapper}>
         {connectedDevice ? (
           <>
-            <PulseIndicator />
-            <Text style={styles.glucoseRateTitleText}>Your Glucose Rate Is:</Text>
-            <Text style={styles.glucoseRateText}>{glucoseRate} mg/dL</Text>
-          </>
+          <GlucoseArrow glucoseHistory= {glucoseHistory}/>
+          <Text style={styles.glucoseRateTitleText}>Your Glucose Rate Is:</Text>
+          <Text style={styles.glucoseRateText}>{glucoseRate} mg/dL</Text>
+        </>
         ) : (
           <Text style={styles.glucoseRateTitleText}>
             Please Connect to a Glucose Monitor
@@ -177,6 +177,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
   },
+  batteryDisplay: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end", 
+    padding: 10,
+    marginRight: 20,
+  }
 });
 
 export default App;
