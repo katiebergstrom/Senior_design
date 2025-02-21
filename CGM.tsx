@@ -86,16 +86,16 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View>
+      <View style={styles.batteryDisplay}>
         <Text>Battery Level: {batteryStatus}%</Text>
       </View>
       <View style={styles.glucoseRateTitleWrapper}>
         {connectedDevice ? (
           <>
-            <GlucoseArrow glucoseHistory= {glucoseHistory}/>
-            <Text style={styles.glucoseRateTitleText}>Your Glucose Rate Is:</Text>
-            <Text style={styles.glucoseRateText}>{glucoseRate} mg/dL</Text>
-          </>
+          <GlucoseArrow glucoseHistory= {glucoseHistory}/>
+          <Text style={styles.glucoseRateTitleText}>Your Glucose Rate Is:</Text>
+          <Text style={styles.glucoseRateText}>{glucoseRate} mg/dL</Text>
+        </>
         ) : (
           <Text style={styles.glucoseRateTitleText}>
             Please Connect to a Glucose Monitor
@@ -108,13 +108,24 @@ const App = () => {
       </View>
 
       <TouchableOpacity
-        onPress={connectedDevice ? disconnectFromDevice : openModal}
-        style={styles.ctaButton}
-      >
-        <Text style={styles.ctaButtonText}>
-          {connectedDevice ? "Disconnect" : "Connect"}
-        </Text>
-      </TouchableOpacity>
+  onPress={async () => {
+    if (connectedDevice) {
+      // Disconnect if already connected
+      disconnectFromDevice();
+    } else {
+      // Open modal or try connecting
+      await openModal(); // Assuming openModal handles connection
+
+      // After connecting, call the transmit data function
+      if (connectedDevice) {handleStartReading;}
+    }
+  }}
+  style={styles.ctaButton}
+>
+  <Text style={styles.ctaButtonText}>
+    {connectedDevice ? "Disconnect" : "Connect"}
+  </Text>
+</TouchableOpacity>
 
       <TouchableOpacity onPress={handleStartReading} style={styles.ctaButton}>
         <Text style={styles.ctaButtonText}>Start Reading</Text>
@@ -177,6 +188,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
   },
+  batteryDisplay: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end", 
+    padding: 10,
+    marginRight: 20,
+  }
 });
 
 export default App;
