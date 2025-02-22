@@ -25,10 +25,13 @@ const App = () => {
     glucoseRate,
     glucoseHistory,
     disconnectFromDevice,
+    saveDataToDB,
+    readDataFromDB,
     appendDataToFile,
     readDataFromFile, 
     transmitData,
     clearFileContents,
+    clearDatabase,
     batteryStatus
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
@@ -37,7 +40,7 @@ const App = () => {
 
   useEffect(() => {
     const loadGlucoseData = async () => {
-      const data = await readDataFromFile();
+      const data = await readDataFromDB();
       if (Array.isArray(data)) {
         const updatedData = data.slice(-40)
         // setGlucoseData(updatedData)
@@ -87,7 +90,7 @@ const App = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.batteryDisplay}>
-        <Text>Battery Level: {batteryStatus}%</Text>
+        <Text style={styles.batteryText}>Battery Level: </Text>
       </View>
       <View style={styles.glucoseRateTitleWrapper}>
         {connectedDevice ? (
@@ -120,8 +123,8 @@ const App = () => {
         <Text style={styles.ctaButtonText}>Start Reading</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={clearFileContents} style={styles.ctaButton}>
-        <Text style={styles.ctaButtonText}>Clear file contents</Text>
+      <TouchableOpacity onPress={clearDatabase} style={styles.ctaButton}>
+        <Text style={styles.ctaButtonText}>Clear database contents</Text>
       </TouchableOpacity>
 
       <Button title="Transmit Data" onPress={handleTransmitData} />  
@@ -183,7 +186,12 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end", 
     padding: 10,
     marginRight: 20,
-  }
+  },
+  batteryText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "black",
+  },  
 });
 
 export default App;

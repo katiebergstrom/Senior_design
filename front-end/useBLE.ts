@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
+import { Alert } from 'react-native';
 import RNFS from "react-native-fs"
+import * as SQLite from "expo-sqlite/legacy";
 import {
   BleError,
   BleManager,
@@ -23,6 +25,9 @@ interface BluetoothLowEnergyApi {
   transmitData: (device: Device, action: 'start' | 'disconnect') => Promise<void>;
   connectToDevice: (deviceId: Device) => Promise<void>;
   disconnectFromDevice: () => void;
+  initDB: () => void;
+  saveDataToDB: (data: any) => void;
+  readDataFromDB: () => void;
   appendDataToFile: (data: any) => void;
   readDataFromFile: () => void;
   connectedDevice: Device | null;
@@ -31,6 +36,7 @@ interface BluetoothLowEnergyApi {
   glucoseHistory: { x: string; y: number }[];
   batteryStatus: String;
   clearFileContents: () => void;
+  clearDatabase: () => void;
 }
 
 function useBLE(): BluetoothLowEnergyApi {
@@ -96,6 +102,76 @@ function useBLE(): BluetoothLowEnergyApi {
       return true;
     }
   };
+
+  const db = SQLite.openDatabase("glucose_data.db");
+
+  const initDB = () => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS glucose_data (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          time TEXT,
+          glucoseLevel INTEGER,
+          batteryLevel TEXT
+        );`,
+        [],
+        () => console.log("Database initialized"),
+        (_, error) => {
+          console.log("Database initialization error:", error);
+          return true;
+        }
+      );
+    });
+  };
+
+  useEffect(() => {
+    console.log("Initializing database...");
+    initDB();
+  }, []);
+
+  const saveDataToDB = (data: { time: string; glucoseLevel: number; batteryLevel: string }) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "INSERT INTO glucose_data (time, glucoseLevel, batteryLevel) VALUES (?, ?, ?);",
+        [data.time, data.glucoseLevel, data.batteryLevel],
+        () => console.log("Data saved to SQLite:", data),
+        (_, error) => {
+          console.log("Error saving data:", error);
+          return true;
+        }
+      );
+    });
+  };
+
+  const readDataFromDB = () => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT * FROM glucose_data;",
+        [],
+        (_, result) => {
+          const data = result.rows._array;
+          console.log("Data read from SQLite:", data);
+          setGlucoseHistory(data.map((entry) => ({ x: entry.time, y: entry.glucoseLevel })));
+        },
+        (_, error) => {
+          console.log("Error reading data:", error);
+          return true;
+        }
+      );
+    });
+  };
+
+  const clearDatabase = () => {
+    db.transaction((tx) => {
+      tx.executeSql("DELETE FROM glucose_data;", [], 
+      () => console.log("Database cleared"), 
+      (_, error) => {
+        console.log("Error clearing database:", error);
+        return true;
+      });
+    });
+  };
+
 
   const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
     devices.findIndex((device) => nextDevice.id === device.id) > -1;
@@ -188,6 +264,9 @@ function useBLE(): BluetoothLowEnergyApi {
   ) => {
     if (error) {
       console.log(error);
+      // Log the BLE error message and provide a generic alert
+      console.log('BLE Error:', error.message);
+      Alert.alert('Disconnected', `${error.message}`);
       return -1;
     } else if (!characteristic?.value) {
       console.log("No Data was recieved");
@@ -212,6 +291,7 @@ function useBLE(): BluetoothLowEnergyApi {
 
     const newData = { time, glucoseLevel, batteryLevel }
     appendDataToFile(newData);
+    saveDataToDB({ time, glucoseLevel, batteryLevel });
 
     setglucoseRate(glucoseLevel);
     setBatteryStatus(batteryLevel);
@@ -292,10 +372,14 @@ function useBLE(): BluetoothLowEnergyApi {
     disconnectFromDevice,
     appendDataToFile,
     readDataFromFile, 
+    initDB,
+    saveDataToDB,
+    readDataFromDB,
     glucoseRate,
     glucoseHistory,
     transmitData,
     clearFileContents,
+    clearDatabase,
     batteryStatus,
   };
 }
