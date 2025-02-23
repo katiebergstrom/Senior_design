@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { VictoryChart, VictoryLine, VictoryScatter, VictoryAxis, VictoryGroup } from 'victory-native';
+import { VictoryChart, VictoryLine, VictoryScatter, VictoryAxis, VictoryGroup, VictoryBar } from 'victory-native';
 
 interface GlucoseGraphProps {
   data: { x: string; y: number }[];
@@ -26,25 +26,40 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
   ).filter(entry => !isNaN(entry.x));
 
   if (processedData.length === 0) return null;
-
+ 
   const firstDataPoint = processedData[0].x;
   const latestTime = processedData[processedData.length - 1].x;
   const earliestTime = Math.max(firstDataPoint, latestTime - TIME_WINDOW);
 
   return (
     <VictoryChart 
+      height={500}
       domain={{ x: [earliestTime, earliestTime + TIME_WINDOW], y: [990, 1200] }} // X-axis starts from 0 to 120 (2 minutes)
       domainPadding={10}
     >
+
+      <VictoryBar
+        data={[{ x: earliestTime, y: 1200, y0: 1100 }]}
+        style={{ data: { fill: 'lightcoral', opacity: 0.3 } }}
+      />
+      <VictoryBar
+        data={[{ x: earliestTime, y: 1100, y0: 1000 }]}
+        style={{ data: { fill: 'lightyellow', opacity: 0.3 } }}
+      />
+      <VictoryBar
+        data={[{ x: earliestTime, y: 1000, y0: 990 }]}
+        style={{ data: { fill: 'lightgreen', opacity: 0.3 } }}
+      />
+
       <VictoryGroup>
         <VictoryLine y={() => 1000} style={{ data: { stroke: "lightgreen", strokeWidth: 5 } }} />
         <VictoryLine y={() => 1100} style={{ data: { stroke: "lightyellow", strokeWidth: 5 } }} />
         <VictoryLine y={() => 1200} style={{ data: { stroke: "lightcoral", strokeWidth: 5 } }} />
       </VictoryGroup>
-      <VictoryLine
+      {/* <VictoryLine
           style={{ data: { stroke: "#c43a31" } }} // Color for the line
           data={processedData}
-        />
+        /> */}
 
         <VictoryScatter
           style={{ data: { fill: "#c43a31" } }} // Color for the points
