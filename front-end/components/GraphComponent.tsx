@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import { VictoryChart, VictoryLine, VictoryScatter, VictoryAxis, VictoryGroup, VictoryBar } from 'victory-native';
+import { StyleSheet, View } from 'react-native';
+import { VictoryChart, VictoryLine, VictoryScatter, VictoryAxis, VictoryGroup, VictoryBar, VictoryLabel, VictoryStack } from 'victory-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface GlucoseGraphProps {
   data: { x: string; y: number }[];
@@ -31,71 +32,90 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
   const latestTime = processedData[processedData.length - 1].x;
   const earliestTime = Math.max(firstDataPoint, latestTime - TIME_WINDOW);
 
+  const isGraphFull = (latestTime - earliestTime >= 115);
+  console.log(latestTime-earliestTime);
+  console.log("latestTime:", latestTime);
+  console.log("earliestTime:", earliestTime);
+  console.log("isGraphFull:", isGraphFull);
+
   return (
-    <VictoryChart 
-      height={500}
-      domain={{ x: [earliestTime, earliestTime + TIME_WINDOW], y: [990, 1200] }} // X-axis starts from 0 to 120 (2 minutes)
-      domainPadding={10}
-    >
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: 800, height: 500, position: 'relative' }}>
 
-      <VictoryBar
-        data={[{ x: earliestTime, y: 1200, y0: 1100 }]}
-        style={{ data: { fill: 'lightcoral', opacity: 0.3 } }}
-      />
-      <VictoryBar
-        data={[{ x: earliestTime, y: 1100, y0: 1000 }]}
-        style={{ data: { fill: 'lightyellow', opacity: 0.3 } }}
-      />
-      <VictoryBar
-        data={[{ x: earliestTime, y: 1000, y0: 990 }]}
-        style={{ data: { fill: 'lightgreen', opacity: 0.3 } }}
+      <LinearGradient
+        colors={['#FFFACD', '#FFFACD', '#ADFF2F', '#ADFF2F', '#FFA07A', '#FFA07A']} 
+        locations={[0, 0.3, 0.3, 0.7, 0.7, 1]}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={[styles.gradientBackground, { height: 400 }]}
       />
 
-      <VictoryGroup>
-        <VictoryLine y={() => 1000} style={{ data: { stroke: "lightgreen", strokeWidth: 5 } }} />
-        <VictoryLine y={() => 1100} style={{ data: { stroke: "lightyellow", strokeWidth: 5 } }} />
-        <VictoryLine y={() => 1200} style={{ data: { stroke: "lightcoral", strokeWidth: 5 } }} />
-      </VictoryGroup>
-      {/* <VictoryLine
-          style={{ data: { stroke: "#c43a31" } }} // Color for the line
-          data={processedData}
-        /> */}
+      <VictoryChart 
+        height={500}
+        domain={{ x: [earliestTime, earliestTime + TIME_WINDOW], y: [990, 1200] }} // X-axis starts from 0 to 120 (2 minutes)
+        domainPadding={10}
+      >
 
-        <VictoryScatter
-          style={{ data: { fill: "#c43a31" } }} // Color for the points
-          size={4} // Size of each point
-          data={processedData}
-        />
-
-        <VictoryAxis
-          dependentAxis
-          label="Glucose Rate (mg/dL)"
-          style={{ 
-            axisLabel: { padding: 38 },  
-            tickLabels: { padding: 0 },  
-          }}
-        />
-        <VictoryAxis
-        label="Time (HH:MM)"
-        style={{ 
-          axisLabel: { padding: 25 },  
-          tickLabels: { padding: 5 },  
-        }}
-        tickFormat={(tick) => {
-          const minutes = Math.floor((tick % 3600) / 60);
-          const seconds = tick % 60;
       
-          // Only show labels if seconds == 0 
-          if (seconds === 0) {
-            const hours = Math.floor(tick / 3600);
-            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-          } else {
-            return ''; 
+        {/* <VictoryLine
+            style={{ data: { stroke: "#c43a31" } }} // Color for the line
+            data={processedData}
+          /> */}
+
+          <VictoryScatter
+            style={{ data: { fill: "#c43a31" } }} // Color for the points
+            size={4} // Size of each point
+            data={processedData}
+          />
+
+          <VictoryAxis
+            dependentAxis
+            label="Glucose Rate (mg/dL)"
+            style={{ 
+              axisLabel: { padding: 38 },  
+              tickLabels: { padding: 0 },  
+            }}
+          />
+          <VictoryAxis
+          label="Time (HH:MM)"
+          style={{ 
+            axisLabel: { padding: 25 },  
+            tickLabels: { padding: 5 },  
+          }}
+          tickFormat={(tick) => {
+            const minutes = Math.floor((tick % 3600) / 60);
+            const seconds = tick % 60;
+        
+            // Only show labels if seconds == 0 
+            if (seconds === 0) {
+              const hours = Math.floor(tick / 3600);
+              return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            } else {
+              return ''; 
+            }
+          }}
+          tickLabelComponent={
+            isGraphFull ? (
+              <VictoryLabel text="Current Time" style={{ fill: "blue", fontSize: 14, fontWeight: "bold" }} />
+            ) : undefined
           }
-        }}
-      />
-    </VictoryChart>
+        />
+      </VictoryChart>
+      </View>
+      </View>
   );
 };
+
+const styles = StyleSheet.create({
+  gradientBackground: {
+    position: 'absolute',
+    top: 50,
+    left: 50,
+    right: 500, 
+    width: 700, 
+    height: 300, 
+    zIndex: -1, // Keeps it behind the graph
+  },
+});
 
 export default GlucoseGraph;
