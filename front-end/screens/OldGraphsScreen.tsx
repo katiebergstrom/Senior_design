@@ -4,21 +4,21 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import { Picker } from '@react-native-picker/picker';
 import useBLE from '../useBLE';
-import GraphComponent from '../components/GraphComponent'
+import DailyGraphComponent from '../components/DailyGraphComponent'
 import RNFS from "react-native-fs";
-import { readDataFromFile } from '../functions/readFileData'
+import { readDataFromFile } from '../src/functions/readFileData'
+import glucoseJson from "../assets/data/glucose_data_new.json";
 
 type Props = StackScreenProps<RootStackParamList, 'OldGraphs'>;
 const FILE_PATH = `${RNFS.DocumentDirectoryPath}/new_glucose_data.json`;
 
 const copyJsonToFileSystem = async () => {
-    const assetPath = "../data/new_glucose_data.json"; // Your project file
+    const assetPath = "data/new_glucose_data.json"; 
     const fileExists = await RNFS.exists(FILE_PATH);
   
     if (!fileExists) {
       try {
-        const jsonContent = await import(`../${assetPath}`);
-        await RNFS.writeFile(FILE_PATH, JSON.stringify(jsonContent), 'utf8');
+        await RNFS.writeFile(FILE_PATH, JSON.stringify(glucoseJson), "utf8");
         console.log("File copied successfully!");
       } catch (error) {
         console.error("Error copying JSON file:", error);
@@ -49,11 +49,11 @@ const OldGraphsScreen: React.FC<Props> = ({ navigation }) => {
   const renderGraph = () => {
     switch (selectedGraph) {
       case "daily":
-        return <GraphComponent data={glucoseData} />;
+        return <DailyGraphComponent data={glucoseData} />;
       case "weekly":
-        return <GraphComponent data={glucoseData} />;
+        return <DailyGraphComponent data={glucoseData} />;
       case "monthly":
-        return <GraphComponent data={glucoseData} />;
+        return <DailyGraphComponent data={glucoseData} />;
       default:
         return <Text>Select a valid time period.</Text>;
     }

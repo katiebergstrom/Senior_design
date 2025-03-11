@@ -17,6 +17,7 @@
     "screens/**/*.tsx",
     "types.ts",
     ".expo/types/**/*.ts",
+    "declarations.d.ts",
     "expo-env.d.ts"
   ],
   "extends": "expo/tsconfig.base"

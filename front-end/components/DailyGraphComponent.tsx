@@ -20,19 +20,9 @@ const convertTimeToSec = (timeStr : string): number => {
 const TIME_WINDOW = 86400; // Show 1 day worth of data
 
 const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
-  // const [glucoseData, setGlucoseData] = useState<{ x: string; y: number }[]>([]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const data = await readDataFromFile(FILE_PATH);
-  //     setGlucoseData(data);
-  //   };
-
-  //   fetchData();
-  // }, []);
 
   //THIS NEEDS TO BE FIXED
-  const processedData = data.slice(-40).map(entry => ({
+  const processedData = data.map(entry => ({
     x : convertTimeToSec(entry.x),
     y : entry.y
   })
@@ -42,7 +32,7 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
  
   const firstDataPoint = processedData[0].x;
   const latestTime = processedData[processedData.length - 1].x;
-  const earliestTime = Math.max(firstDataPoint, latestTime - TIME_WINDOW);
+  const earliestTime = Math.max(0, latestTime - TIME_WINDOW);
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -83,7 +73,7 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
             tickLabels: { padding: 5 },  
           }}
           tickFormat={(tick) => {
-            const hours = Math.floor(tick / 3600);
+            const hours = Math.floor(tick % 86400 / 3600);
             const minutes = Math.floor((tick % 3600) / 60);
             return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
          }}         

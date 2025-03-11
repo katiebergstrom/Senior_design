@@ -12,7 +12,6 @@ export const readDataFromFile = async (filePath: string) => {
     const fileContents = await RNFS.readFile(filePath, "utf8");
     const parsedData = JSON.parse(fileContents);
 
-    // Format the data as needed
     return parsedData.map((entry: any) => ({
       x: entry.time,
       y: Number(entry.glucoselevel), // Ensure glucose level is a number
