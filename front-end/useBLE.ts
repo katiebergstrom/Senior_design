@@ -18,6 +18,14 @@ const GLUCO_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const GLUCO_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 const GLUCO_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 const FILE_PATH = RNFS.DocumentDirectoryPath + "/glucose_data.json";
+const START_GLUCOSE = '1110';
+const STOP_GLUCOSE = '1111';
+const START_ALIGNMNENT = '1112';
+const STOP_ALIGNMENT = '1113';
+const ALIGNED = '1114';
+const SINGLE_LED = '1115';
+const READ_FILE_DATA = '1116';
+const DISCONNECT_BLE = '1117';
 
 interface BluetoothLowEnergyApi {
   requestPermissions(): Promise<boolean>;
@@ -270,6 +278,7 @@ function useBLE(): BluetoothLowEnergyApi {
 
   const disconnectFromDevice = () => {
     if (connectedDevice) {
+      //HERE
       bleManager.cancelDeviceConnection(connectedDevice.id);
       setConnectedDevice(null);
       setglucoseRate(0);
@@ -400,12 +409,14 @@ function useBLE(): BluetoothLowEnergyApi {
     if (device && connectedDevice) {
       try {
         let code: string;
+        let currentDate : number;
         // Writing data to the characteristic
         if (action === 'start') {
-          code = "2025/02/02/04/30/00"
+          currentDate = Math.floor(Date.now() / 1000) - 18000;
+          code = STOP_ALIGNMENT + "/" + currentDate;
         }
         else if (action === 'disconnect') {
-          code = "1116";
+          code = DISCONNECT_BLE;
         }
         else {
           console.log("Invalid action");
@@ -428,16 +439,22 @@ function useBLE(): BluetoothLowEnergyApi {
   };
 
   const exportFileToSDCard = async () => {
-    const sdCardPath = await getSdCardPath();
-    if (!sdCardPath) {
-        console.error("SD Card path not found");
-        return;
-    }
+    // const sdCardPath = await getSdCardPath();
+    // if (!sdCardPath) {
+    //     console.error("SD Card path not found");
+    //     return;
+    // }
 
-    const destPath = `${sdCardPath}/glucose_data.json`;
+    const sdCardPath = "/storage/4A21-0000/Download/glucose_data.json";
+    await RNFS.copyFile(FILE_PATH, sdCardPath);
+    console.log("File exported to:", sdCardPath);
+
+    // const destPath = `${sdCardPath}/glucose_data.json`;
+    // console.log("Destination path: ", destPath);
 
     try {
-        await RNFS.copyFile(FILE_PATH, destPath);
+        // This will overwrite the file that is already in the sd card
+        await RNFS.copyFile(FILE_PATH, sdCardPath);
         console.log("File exported to SD card successfully!");
     } catch (error) {
         console.error("Error exporting file to SD card:", error);

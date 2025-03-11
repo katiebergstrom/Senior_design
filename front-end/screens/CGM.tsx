@@ -143,8 +143,6 @@ const App = () => {
         <Text style={styles.ctaButtonText}>Export File to SD Card</Text>
       </TouchableOpacity>
 
-      <Button title="Transmit Data" onPress={handleTransmitData} />  
-
       <DeviceModal
         closeModal={hideModal}
         visible={isModalVisible}
@@ -175,6 +173,7 @@ const styles = StyleSheet.create({
   glucoseRateText: {
     fontSize: 25,
     marginTop: 15,
+    marginBottom: 30
   },
   graphContainer: {
     flex: 1,
