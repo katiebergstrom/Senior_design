@@ -19,6 +19,8 @@ const App = () => {
   const {
     requestPermissions,
     scanForPeripherals,
+    requestStoragePermissions,
+    getSdCardPath,
     allDevices,
     connectToDevice,
     connectedDevice,
@@ -31,6 +33,7 @@ const App = () => {
     readDataFromFile, 
     transmitData,
     clearFileContents,
+    exportFileToSDCard,
     clearDatabase,
     batteryStatus
   } = useBLE();
@@ -87,10 +90,19 @@ const App = () => {
     }
   };
 
+  const handleExportFile = async () => {
+    try {
+      await exportFileToSDCard();
+      console.log("File successfully exported to SD card");
+    } catch (error) {
+      console.error("Error exporting file to SD card:", error);
+    }
+  };  
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.batteryDisplay}>
-        <Text style={styles.batteryText}>Battery Level: </Text>
+        <Text style={styles.batteryText}>Battery Level: {batteryStatus}</Text>
       </View>
       <View style={styles.glucoseRateTitleWrapper}>
         {connectedDevice ? (
@@ -127,7 +139,9 @@ const App = () => {
         <Text style={styles.ctaButtonText}>Clear database contents</Text>
       </TouchableOpacity>
 
-      <Button title="Transmit Data" onPress={handleTransmitData} />  
+      <TouchableOpacity onPress={handleExportFile} style={styles.ctaButton}>
+        <Text style={styles.ctaButtonText}>Export File to SD Card</Text>
+      </TouchableOpacity>
 
       <DeviceModal
         closeModal={hideModal}
@@ -159,6 +173,7 @@ const styles = StyleSheet.create({
   glucoseRateText: {
     fontSize: 25,
     marginTop: 15,
+    marginBottom: 30
   },
   graphContainer: {
     flex: 1,

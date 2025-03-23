@@ -18,9 +18,19 @@ const GLUCO_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const GLUCO_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 const GLUCO_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 const FILE_PATH = RNFS.DocumentDirectoryPath + "/glucose_data.json";
+const START_GLUCOSE = '1110';
+const STOP_GLUCOSE = '1111';
+const START_ALIGNMNENT = '1112';
+const STOP_ALIGNMENT = '1113';
+const ALIGNED = '1114';
+const SINGLE_LED = '1115';
+const READ_FILE_DATA = '1116';
+const DISCONNECT_BLE = '1117';
 
 interface BluetoothLowEnergyApi {
   requestPermissions(): Promise<boolean>;
+  requestStoragePermissions(): Promise<boolean>;
+  getSdCardPath(): Promise<string | null>;
   scanForPeripherals(): void;
   transmitData: (device: Device, action: 'start' | 'disconnect') => Promise<void>;
   connectToDevice: (deviceId: Device) => Promise<void>;
@@ -34,7 +44,9 @@ interface BluetoothLowEnergyApi {
   allDevices: Device[];
   glucoseRate: number;
   glucoseHistory: { x: string; y: number }[];
+  longGlucoseHistory: { x: string; y: number }[];
   batteryStatus: String;
+  exportFileToSDCard(): Promise<void>;
   clearFileContents: () => void;
   clearDatabase: () => void;
 }
@@ -45,6 +57,7 @@ function useBLE(): BluetoothLowEnergyApi {
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [glucoseRate, setglucoseRate] = useState<number>(0);
   const [glucoseHistory, setGlucoseHistory] = useState<{ x: string; y: number }[]>([]);
+  const [longGlucoseHistory, setLongGlucoseHistory] = useState<{ x: string; y: number }[]>([]);
   const [batteryStatus, setBatteryStatus] = useState<string>("");
 
   const requestAndroid31Permissions = async () => {
@@ -103,6 +116,62 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+  const requestStoragePermissions = async () => {
+    try {
+      // Check if both read and write permissions are granted
+      const readGranted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
+      const writeGranted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+      
+      // If permissions are not granted, request them
+      if (!readGranted || !writeGranted) {
+        console.log('Read and/or write permissions have not been granted, requesting now...');
+
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        ]);
+
+        if (
+          granted[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] === PermissionsAndroid.RESULTS.GRANTED &&
+          granted[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] === PermissionsAndroid.RESULTS.GRANTED
+        ) {
+          console.log('Read and write permissions granted');
+          return true;
+        } else {
+          console.log('Permissions not granted');
+          return false;
+        }
+      } else {
+        console.log('Permissions already granted');
+        return true;
+      }
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  };
+
+  const getSdCardPath = async () => {
+    try {
+        const externalStorageDirs = await RNFS.getAllExternalFilesDirs();
+        console.log('External Storage Directories:', externalStorageDirs);
+        return externalStorageDirs.length > 1 ? externalStorageDirs[1] : null;
+    } catch (error) {
+        console.error('Error getting SD card path:', error);
+        return null;
+    }
+  };
+// On a device with both internal and removable SD storage, it might return:
+// javascript
+// Copy
+// Edit
+// [
+//   "/storage/emulated/0/Android/data/com.yourapp/files",
+//   "/storage/1234-5678/Android/data/com.yourapp/files"
+// ]
+// First path: Primary external storage (/storage/emulated/0/), which is the built-in storage.
+// Second path: External SD card (/storage/1234-5678/), if available.
+
   const db = SQLite.openDatabase("glucose_data.db");
 
   const initDB = () => {
@@ -152,6 +221,7 @@ function useBLE(): BluetoothLowEnergyApi {
           const data = result.rows._array;
           console.log("Data read from SQLite:", data);
           setGlucoseHistory(data.map((entry) => ({ x: entry.time, y: entry.glucoseLevel })));
+          setLongGlucoseHistory(data.map((entry) => ({ x: entry.time, y: entry.glucoseLevel })));
         },
         (_, error) => {
           console.log("Error reading data:", error);
@@ -170,6 +240,8 @@ function useBLE(): BluetoothLowEnergyApi {
         return true;
       });
     });
+    setGlucoseHistory([]);
+    setLongGlucoseHistory([]);
   };
 
 
@@ -206,6 +278,7 @@ function useBLE(): BluetoothLowEnergyApi {
 
   const disconnectFromDevice = () => {
     if (connectedDevice) {
+      //HERE
       bleManager.cancelDeviceConnection(connectedDevice.id);
       setConnectedDevice(null);
       setglucoseRate(0);
@@ -239,6 +312,7 @@ function useBLE(): BluetoothLowEnergyApi {
       if (!fileExists) {
         console.log("File does not exist. Returning empty array.");
         setGlucoseHistory([]); 
+        setLongGlucoseHistory([]); 
         return;
       }
   
@@ -251,9 +325,11 @@ function useBLE(): BluetoothLowEnergyApi {
       }));
   
       setGlucoseHistory(formattedData);
+      setLongGlucoseHistory(formattedData);
     } catch (error) {
       console.log("Error reading file:", error);
       setGlucoseHistory([]); 
+      setLongGlucoseHistory([]); 
     }
   };
   
@@ -279,8 +355,8 @@ function useBLE(): BluetoothLowEnergyApi {
     //setglucoseRate(+rawData);
     console.log("rawData= ", rawData);
 
-    const parts = rawData.split(',');
-    if (parts.length < 3) {
+    const parts = rawData.split('/');
+    if (parts.length < 4) {
       console.log("Invalid data format");
       return;
     }
@@ -288,6 +364,7 @@ function useBLE(): BluetoothLowEnergyApi {
     const time = parts[0];
     const glucoseLevel = +parts[1];
     const batteryLevel = parts[2];
+    const errorCode = parts[3];
 
     const newData = { time, glucoseLevel, batteryLevel }
     appendDataToFile(newData);
@@ -300,6 +377,14 @@ function useBLE(): BluetoothLowEnergyApi {
       const newDataPoint = { x: time, y: glucoseLevel };
 
       const updatedHistory = [...prev, newDataPoint].slice(-40);
+
+      return updatedHistory;
+    });
+
+    setLongGlucoseHistory((prev) => {
+      const newDataPoint = { x: time, y: glucoseLevel };
+
+      const updatedHistory = [...prev, newDataPoint]
 
       return updatedHistory;
     });
@@ -325,12 +410,16 @@ function useBLE(): BluetoothLowEnergyApi {
     if (device && connectedDevice) {
       try {
         let code: string;
+        let currentDate : number;
         // Writing data to the characteristic
         if (action === 'start') {
-          code = "2025/02/02/04/30/00"
+          currentDate = Math.floor(Date.now() / 1000) - 18000;
+          console.log("Current date: ", currentDate)
+          code = currentDate + "/" + STOP_ALIGNMENT;
+          //code = STOP_ALIGNMENT + "/" + currentDate;
         }
         else if (action === 'disconnect') {
-          code = "1116";
+          code = DISCONNECT_BLE;
         }
         else {
           console.log("Invalid action");
@@ -351,12 +440,37 @@ function useBLE(): BluetoothLowEnergyApi {
       console.log("No device connected or device is not ready.");
     }
   };
+
+  const exportFileToSDCard = async () => {
+    // const sdCardPath = await getSdCardPath();
+    // if (!sdCardPath) {
+    //     console.error("SD Card path not found");
+    //     return;
+    // }
+
+    const sdCardPath = "/storage/4A21-0000/Download/glucose_data.json";
+    await RNFS.copyFile(FILE_PATH, sdCardPath);
+    console.log("File exported to:", sdCardPath);
+
+    // const destPath = `${sdCardPath}/glucose_data.json`;
+    // console.log("Destination path: ", destPath);
+
+    try {
+        // This will overwrite the file that is already in the sd card
+        await RNFS.copyFile(FILE_PATH, sdCardPath);
+        console.log("File exported to SD card successfully!");
+    } catch (error) {
+        console.error("Error exporting file to SD card:", error);
+    }
+  };
+
   
   const clearFileContents = async () => {
     try {
       const filePath = `${RNFS.DocumentDirectoryPath}/glucose_data.json`;
       await RNFS.writeFile(filePath, JSON.stringify([]), 'utf8'); // Overwrite with empty array
       setGlucoseHistory([]);
+      setLongGlucoseHistory([]);
       console.log("File contents cleared");
     } catch (error) {
       console.error("Error clearing file contents:", error);
@@ -366,6 +480,8 @@ function useBLE(): BluetoothLowEnergyApi {
   return {
     scanForPeripherals,
     requestPermissions,
+    requestStoragePermissions,
+    getSdCardPath,
     connectToDevice,
     allDevices,
     connectedDevice,
@@ -377,8 +493,10 @@ function useBLE(): BluetoothLowEnergyApi {
     readDataFromDB,
     glucoseRate,
     glucoseHistory,
+    longGlucoseHistory,
     transmitData,
     clearFileContents,
+    exportFileToSDCard,
     clearDatabase,
     batteryStatus,
   };

@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 import { VictoryChart, VictoryLine, VictoryScatter, VictoryAxis, VictoryGroup, VictoryBar, VictoryLabel, VictoryStack } from 'victory-native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -17,10 +17,12 @@ const convertTimeToSec = (timeStr : string): number => {
   return hours * 3600 + minutes * 60 + seconds;
 };
 
-const TIME_WINDOW = 120; // Show 2 minutes worth of data (120 seconds), hardcoded for now
+const TIME_WINDOW = 86400; // Show 1 day worth of data
 
 const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
-  const processedData = data.slice(-40).map(entry => ({
+
+  //THIS NEEDS TO BE FIXED
+  const processedData = data.map(entry => ({
     x : convertTimeToSec(entry.x),
     y : entry.y
   })
@@ -30,13 +32,7 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
  
   const firstDataPoint = processedData[0].x;
   const latestTime = processedData[processedData.length - 1].x;
-  const earliestTime = Math.max(firstDataPoint, latestTime - TIME_WINDOW);
-
-  const isGraphFull = (latestTime - earliestTime >= 115);
-  console.log(latestTime-earliestTime);
-  console.log("latestTime:", latestTime);
-  console.log("earliestTime:", earliestTime);
-  console.log("isGraphFull:", isGraphFull);
+  const earliestTime = Math.max(0, latestTime - TIME_WINDOW);
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -52,17 +48,11 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
 
       <VictoryChart 
         height={500}
-        domain={{ x: [earliestTime, earliestTime + TIME_WINDOW], y: [990, 1200] }} // X-axis starts from 0 to 120 (2 minutes)
+        domain={{ x: [earliestTime, earliestTime + TIME_WINDOW], y: [70, 150] }} 
         domainPadding={10}
       >
 
-      
-        {/* <VictoryLine
-            style={{ data: { stroke: "#c43a31" } }} // Color for the line
-            data={processedData}
-          /> */}
-
-          <VictoryScatter
+        <VictoryScatter
             style={{ data: { fill: "#c43a31" } }} // Color for the points
             size={4} // Size of each point
             data={processedData}
@@ -83,22 +73,10 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
             tickLabels: { padding: 5 },  
           }}
           tickFormat={(tick) => {
+            const hours = Math.floor(tick % 86400 / 3600);
             const minutes = Math.floor((tick % 3600) / 60);
-            const seconds = tick % 60;
-        
-            // Only show labels if seconds == 0 
-            if (seconds === 0) {
-              const hours = Math.floor(tick / 3600);
-              return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-            } else {
-              return ''; 
-            }
-          }}
-          tickLabelComponent={
-            isGraphFull ? (
-              <VictoryLabel text="Current Time" style={{ fill: "blue", fontSize: 14, fontWeight: "bold" }} />
-            ) : undefined
-          }
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+         }}         
         />
       </VictoryChart>
       </View>
