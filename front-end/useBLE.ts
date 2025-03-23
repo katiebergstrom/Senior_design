@@ -190,6 +190,35 @@ function useBLE(): BluetoothLowEnergyApi {
           return true;
         }
       );
+
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS event_log (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          timestamp TEXT,
+          event TEXT
+        );`,
+        [],
+        () => console.log("Event log table initialized"),
+        (_, error) => {
+          console.log("Error initializing event log table:", error);
+          return true;
+        }
+      );
+    });
+  };
+
+  const logEvent = (event: string) => {
+    const timestamp = new Date().toISOString();
+    db.transaction(tx => {
+      tx.executeSql(
+        "INSERT INTO event_log (timestamp, event) VALUES (?, ?);",
+        [timestamp, event],
+        () => console.log("Event logged:", event),
+        (_, error) => {
+          console.log("Error logging event:", error);
+          return true;
+        }
+      );
     });
   };
 
@@ -270,9 +299,11 @@ function useBLE(): BluetoothLowEnergyApi {
       await deviceConnection.discoverAllServicesAndCharacteristics();
       bleManager.stopDeviceScan();
       startStreamingData(deviceConnection);
+      logEvent(`Connected to device: ${device.name}`);
 
     } catch (e) {
       console.log("FAILED TO CONNECT", e);
+      logEvent(`Failed to connect to device: ${device.name}`);
     }
   };
 
@@ -282,6 +313,7 @@ function useBLE(): BluetoothLowEnergyApi {
       bleManager.cancelDeviceConnection(connectedDevice.id);
       setConnectedDevice(null);
       setglucoseRate(0);
+      logEvent("Device disconnected");
     }
   };
 
