@@ -355,8 +355,8 @@ function useBLE(): BluetoothLowEnergyApi {
     //setglucoseRate(+rawData);
     console.log("rawData= ", rawData);
 
-    const parts = rawData.split(',');
-    if (parts.length < 3) {
+    const parts = rawData.split('/');
+    if (parts.length < 4) {
       console.log("Invalid data format");
       return;
     }
@@ -364,6 +364,7 @@ function useBLE(): BluetoothLowEnergyApi {
     const time = parts[0];
     const glucoseLevel = +parts[1];
     const batteryLevel = parts[2];
+    const errorCode = parts[3];
 
     const newData = { time, glucoseLevel, batteryLevel }
     appendDataToFile(newData);
@@ -413,7 +414,9 @@ function useBLE(): BluetoothLowEnergyApi {
         // Writing data to the characteristic
         if (action === 'start') {
           currentDate = Math.floor(Date.now() / 1000) - 18000;
-          code = STOP_ALIGNMENT + "/" + currentDate;
+          console.log("Current date: ", currentDate)
+          code = currentDate + "/" + STOP_ALIGNMENT;
+          //code = STOP_ALIGNMENT + "/" + currentDate;
         }
         else if (action === 'disconnect') {
           code = DISCONNECT_BLE;
