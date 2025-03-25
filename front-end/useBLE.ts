@@ -18,6 +18,7 @@ const GLUCO_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const GLUCO_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 const GLUCO_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 const FILE_PATH = RNFS.DocumentDirectoryPath + "/glucose_data.json";
+//All the codes we will need for transmitting to device
 const START_GLUCOSE = '1110';
 const STOP_GLUCOSE = '1111';
 const START_ALIGNMNENT = '1112';
@@ -28,6 +29,7 @@ const READ_FILE_DATA = '1116';
 const DISCONNECT_BLE = '1117';
 
 interface BluetoothLowEnergyApi {
+  //Set up all the functions and what they return for useBLE hook
   requestPermissions(): Promise<boolean>;
   requestStoragePermissions(): Promise<boolean>;
   getSdCardPath(): Promise<string | null>;
@@ -116,6 +118,7 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+  //We need this function to be able to write to an SD card on the device
   const requestStoragePermissions = async () => {
     try {
       // Check if both read and write permissions are granted
@@ -151,6 +154,7 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+  //Function to get the location of the SD card so we can write to it
   const getSdCardPath = async () => {
     try {
         const externalStorageDirs = await RNFS.getAllExternalFilesDirs();
@@ -309,7 +313,6 @@ function useBLE(): BluetoothLowEnergyApi {
 
   const disconnectFromDevice = () => {
     if (connectedDevice) {
-      //HERE
       bleManager.cancelDeviceConnection(connectedDevice.id);
       setConnectedDevice(null);
       setglucoseRate(0);
@@ -317,6 +320,7 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+  //Original function I created to append data to file - will remove eventually and use DB instead only
   const appendDataToFile = async (data: any) => {
     try {
       const fileExists = await RNFS.exists(FILE_PATH);
@@ -338,6 +342,7 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   }
 
+  //Same readDataFromFile function - will eventually remove, I have it stored somewhere else
   const readDataFromFile = async () => {
     try {
       const fileExists = await RNFS.exists(FILE_PATH);
@@ -382,22 +387,23 @@ function useBLE(): BluetoothLowEnergyApi {
     }
     try {
     const rawData = base64.decode(characteristic.value);
-    //console.log("rawData= ", rawData);
-
-    //setglucoseRate(+rawData);
+    
     console.log("rawData= ", rawData);
 
+    //Split up data received back from the board
     const parts = rawData.split('/');
     if (parts.length < 4) {
       console.log("Invalid data format");
       return;
     }
     
+    //Put split data into appropriate variables
     const time = parts[0];
     const glucoseLevel = +parts[1];
     const batteryLevel = parts[2];
     const errorCode = parts[3];
 
+    //Separate new data to append to file and save to database
     const newData = { time, glucoseLevel, batteryLevel }
     appendDataToFile(newData);
     saveDataToDB({ time, glucoseLevel, batteryLevel });
@@ -405,6 +411,7 @@ function useBLE(): BluetoothLowEnergyApi {
     setglucoseRate(glucoseLevel);
     setBatteryStatus(batteryLevel);
 
+    //Always slice data to last 40 points for main graph display
     setGlucoseHistory((prev) => {
       const newDataPoint = { x: time, y: glucoseLevel };
 
@@ -413,6 +420,7 @@ function useBLE(): BluetoothLowEnergyApi {
       return updatedHistory;
     });
 
+    //Used for graph
     setLongGlucoseHistory((prev) => {
       const newDataPoint = { x: time, y: glucoseLevel };
 
@@ -437,7 +445,7 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
-
+  //Function to send codes to device
   const transmitData = async (device: Device, action: 'start' | 'disconnect') => {
     if (device && connectedDevice) {
       try {
@@ -480,6 +488,7 @@ function useBLE(): BluetoothLowEnergyApi {
     //     return;
     // }
 
+    //Had to temporarily change path location for testing
     const sdCardPath = "/storage/4A21-0000/Download/glucose_data.json";
     await RNFS.copyFile(FILE_PATH, sdCardPath);
     console.log("File exported to:", sdCardPath);
@@ -496,7 +505,7 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
-  
+  //Function to clear file contents for testing purposes
   const clearFileContents = async () => {
     try {
       const filePath = `${RNFS.DocumentDirectoryPath}/glucose_data.json`;

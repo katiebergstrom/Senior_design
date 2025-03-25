@@ -9,13 +9,17 @@ import RNFS from "react-native-fs";
 import { readDataFromFile } from '../src/functions/readFileData'
 import glucoseJson from "../assets/data/glucose_data_new.json";
 
+// Define the props type for this screen using React Navigation's stack parameters
 type Props = StackScreenProps<RootStackParamList, 'OldGraphs'>;
+//Local file path stored in app
 const FILE_PATH = `${RNFS.DocumentDirectoryPath}/new_glucose_data.json`;
 
+//Function to copy json to file system that I needed to import the json file of readings
 const copyJsonToFileSystem = async () => {
     const assetPath = "data/new_glucose_data.json"; 
     const fileExists = await RNFS.exists(FILE_PATH);
   
+    //If file exists write it to system file
     if (!fileExists) {
       try {
         await RNFS.writeFile(FILE_PATH, JSON.stringify(glucoseJson), "utf8");
@@ -27,15 +31,13 @@ const copyJsonToFileSystem = async () => {
   };
 
 const OldGraphsScreen: React.FC<Props> = ({ navigation }) => {
-  const {
-    readDataFromDB, 
-    longGlucoseHistory,
-    glucoseHistory,
-  } = useBLE();
+  //State to track the selected graph type 
   const [selectedGraph, setSelectedGraph] = useState("daily");
 
+  //State to store the glucose data fetched from the file system
   const [glucoseData, setGlucoseData] = useState<{ x: string; y: number }[]>([]);
 
+  //Fetch glucose data when the component mounts
   useEffect(() => {
     const fetchData = async () => {
       await copyJsonToFileSystem();
@@ -46,6 +48,7 @@ const OldGraphsScreen: React.FC<Props> = ({ navigation }) => {
     fetchData();
   }, []);
 
+  //Function to render the appropriate graph based on the selected time period
   const renderGraph = () => {
     switch (selectedGraph) {
       case "daily":
@@ -75,6 +78,7 @@ const OldGraphsScreen: React.FC<Props> = ({ navigation }) => {
         <Picker.Item label="Monthly" value="monthly" />
       </Picker>
 
+      {/* Debugger output to see if entries loaded from json file */}
       <View>
         <Text>Data loaded: {glucoseData.length} entries</Text>
       </View>

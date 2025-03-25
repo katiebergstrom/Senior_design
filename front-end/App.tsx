@@ -10,10 +10,11 @@ import CGMScreen from './screens/CGM';
 import OldGraphsScreen from './screens/OldGraphsScreen';
 import { RootStackParamList } from './types';
 
-const Stack = createStackNavigator<RootStackParamList>();
+//This creates the 3 bar navigator in top lefthand corner
 const Drawer = createDrawerNavigator<RootStackParamList>();
 const APP_NAME = "Glucowizard";
 
+//Create header that has biorasis logo
 const CustomHeader: React.FC<{ title: string; navigation: any }> = ({ title, navigation }) => (
   <View style={styles.headerContainer}>
     <TouchableOpacity onPress={() => navigation.openDrawer()}>
@@ -25,7 +26,9 @@ const CustomHeader: React.FC<{ title: string; navigation: any }> = ({ title, nav
 
 const App: React.FC = () => {
   return (
+    // Include all necessary screens in navigation for 3 bar icon
     <NavigationContainer>
+      {/* Start the app on the profile screen */}
       <Drawer.Navigator initialRouteName="Profile">
         <Drawer.Screen 
           name="Profile" 

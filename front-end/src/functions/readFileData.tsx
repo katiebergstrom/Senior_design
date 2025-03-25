@@ -1,6 +1,6 @@
 import RNFS from "react-native-fs";
 
-// Generic function to read data from a JSON file
+//Function to read data from a JSON file
 export const readDataFromFile = async (filePath: string) => {
   try {
     const fileExists = await RNFS.exists(filePath);
@@ -12,6 +12,7 @@ export const readDataFromFile = async (filePath: string) => {
     const fileContents = await RNFS.readFile(filePath, "utf8");
     const parsedData = JSON.parse(fileContents);
 
+    //Map the parsed json data to time and glucose level values
     return parsedData.map((entry: any) => ({
       x: entry.time,
       y: Number(entry.glucoselevel), // Ensure glucose level is a number

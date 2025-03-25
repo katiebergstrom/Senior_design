@@ -32,6 +32,8 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
   const latestTime = processedData[processedData.length - 1].x;
   const earliestTime = Math.max(firstDataPoint, latestTime - TIME_WINDOW);
 
+  //Use this to determine if graph is full (has 120 sec worth of data) for current time indicator
+  //Log statements for debugging
   const isGraphFull = (latestTime - earliestTime >= 115);
   console.log(latestTime-earliestTime);
   console.log("latestTime:", latestTime);
@@ -56,7 +58,7 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
         domainPadding={10}
       >
 
-      
+        {/* Comment out line for now */}
         {/* <VictoryLine
             style={{ data: { stroke: "#c43a31" } }} // Color for the line
             data={processedData}
@@ -94,6 +96,7 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
               return ''; 
             }
           }}
+          //Attempt to add label when graph is full indicating current time, this needs to be fixed
           tickLabelComponent={
             isGraphFull ? (
               <VictoryLabel text="Current Time" style={{ fill: "blue", fontSize: 14, fontWeight: "bold" }} />
