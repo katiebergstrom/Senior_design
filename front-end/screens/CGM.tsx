@@ -16,6 +16,7 @@ import useBLE from "../useBLE";
 import GraphComponent from "../components/GraphComponent"
 
 const App = () => {
+  // Import all necessary functions from useBLE
   const {
     requestPermissions,
     scanForPeripherals,
@@ -39,14 +40,11 @@ const App = () => {
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
-  // const [glucoseData, setGlucoseData] = useState<number[]>([]);
-
   useEffect(() => {
     const loadGlucoseData = async () => {
+      //Load the data from the database
       const data = await readDataFromDB();
       if (Array.isArray(data)) {
-        const updatedData = data.slice(-40)
-        // setGlucoseData(updatedData)
         console.log("Loaded glucose history:", data);
       }
       else {
@@ -73,8 +71,8 @@ const App = () => {
     setIsModalVisible(true);
   };
 
+  //This function is unused now but it originally transmitted disconnect code to board
   const handleTransmitData = (event: any) => {
-    // Call the async function but don't return a promise
     if (connectedDevice) {
       transmitData(connectedDevice, 'disconnect').catch((error) => console.log("Error transmitting data:", error));
     } else {
@@ -82,6 +80,7 @@ const App = () => {
     }
   };
 
+  //Connected to button below to transmit data to board to read glucose levels
   const handleStartReading = (event: GestureResponderEvent) => {
     if (connectedDevice) {
       transmitData(connectedDevice, 'start').catch((error) => console.log("Error transmitting data:", error));
@@ -90,6 +89,7 @@ const App = () => {
     }
   };
 
+  //This function will export the file to SD card for the button on screen
   const handleExportFile = async () => {
     try {
       await exportFileToSDCard();
@@ -101,9 +101,12 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Simple view to display battery level in top right */}
       <View style={styles.batteryDisplay}>
         <Text style={styles.batteryText}>Battery Level: {batteryStatus}</Text>
       </View>
+
+      {/* Displays glucose level and arrow if device is connected, if not displays text to connect */}
       <View style={styles.glucoseRateTitleWrapper}>
         {connectedDevice ? (
           <>
@@ -118,10 +121,12 @@ const App = () => {
         )}
       </View>
 
+      {/* Pull up the graph component with glucoseHistory as data */}
       <View style={styles.graphContainer}>
         <GraphComponent data={glucoseHistory} />
       </View>
 
+        {/* Button to connect or disconnect based on device connection */}
       <TouchableOpacity
         onPress={connectedDevice ? disconnectFromDevice : openModal}
         style={styles.ctaButton}
@@ -131,6 +136,7 @@ const App = () => {
         </Text>
       </TouchableOpacity>
 
+        {/* Buttons that appear on main screen */}
       <TouchableOpacity onPress={handleStartReading} style={styles.ctaButton}>
         <Text style={styles.ctaButtonText}>Start Reading</Text>
       </TouchableOpacity>

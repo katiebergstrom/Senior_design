@@ -3,11 +3,12 @@ import { StyleSheet, View, Text } from 'react-native';
 import { VictoryChart, VictoryLine, VictoryScatter, VictoryAxis, VictoryGroup, VictoryBar, VictoryLabel, VictoryStack } from 'victory-native';
 import LinearGradient from 'react-native-linear-gradient';
 
+//Graph will take data in form of (string, number) representing (time, glucoseLevel)
 interface GlucoseGraphProps {
   data: { x: string; y: number }[];
 }
 
-//Create a function that converts the given string time to minutes for graph spacing
+//Create a function that converts the given string time to seconds for graph spacing
 const convertTimeToSec = (timeStr : string): number => {
   if (!timeStr || !timeStr.includes(':')) return NaN; // Handle missing or invalid time
   const parts = timeStr.split(':').map(Number);
@@ -21,23 +22,26 @@ const TIME_WINDOW = 86400; // Show 1 day worth of data
 
 const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
 
-  //THIS NEEDS TO BE FIXED
+  //THIS NEEDS TO BE FIXED, probably only take last x number of data points
   const processedData = data.map(entry => ({
     x : convertTimeToSec(entry.x),
     y : entry.y
   })
   ).filter(entry => !isNaN(entry.x));
 
+  //If there is no data do not display a graph
   if (processedData.length === 0) return null;
  
-  const firstDataPoint = processedData[0].x;
+  //Take the time of the latest data point
   const latestTime = processedData[processedData.length - 1].x;
+  //Take max between 0 and potential earliest time (avoid negatives)
   const earliestTime = Math.max(0, latestTime - TIME_WINDOW);
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{ width: 800, height: 500, position: 'relative' }}>
 
+      {/* This is where the background colors are created on the graph */}
       <LinearGradient
         colors={['#FFFACD', '#FFFACD', '#ADFF2F', '#ADFF2F', '#FFA07A', '#FFA07A']} 
         locations={[0, 0.3, 0.3, 0.7, 0.7, 1]}
@@ -46,18 +50,21 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
         style={[styles.gradientBackground, { height: 400 }]}
       />
 
+      {/* Set the domain and range for the chart */}
       <VictoryChart 
         height={500}
         domain={{ x: [earliestTime, earliestTime + TIME_WINDOW], y: [70, 150] }} 
         domainPadding={10}
       >
 
+        {/* Set up the scatter points (size, color, data) for the chart */}
         <VictoryScatter
             style={{ data: { fill: "#c43a31" } }} // Color for the points
             size={4} // Size of each point
             data={processedData}
           />
 
+          {/* Set y axis label and spacing */}
           <VictoryAxis
             dependentAxis
             label="Glucose Rate (mg/dL)"
@@ -66,12 +73,15 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
               tickLabels: { padding: 0 },  
             }}
           />
+
+          {/* Set x axis label and spacing */}
           <VictoryAxis
           label="Time (HH:MM)"
           style={{ 
             axisLabel: { padding: 25 },  
             tickLabels: { padding: 5 },  
           }}
+          // Space out the ticks appropriately on x axis 
           tickFormat={(tick) => {
             const hours = Math.floor(tick % 86400 / 3600);
             const minutes = Math.floor((tick % 3600) / 60);

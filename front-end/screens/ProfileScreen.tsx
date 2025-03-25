@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Button } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 
+//Extremely basic profile screen that we need to eventually connect to login info
+
 type Props = StackScreenProps<RootStackParamList, 'Profile'>;
 
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
