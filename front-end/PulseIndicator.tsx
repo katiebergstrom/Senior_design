@@ -16,10 +16,12 @@ export const GlucoseArrow = (Data: any) => {
   if (Data.glucoseHistory.length == 0 || Data.glucoseHistory.length == 1){
     return <View />;
   }
+  // take last two glucose readings and compute change in rate
   const Rate1 = Data.glucoseHistory[Data.glucoseHistory.length-2];
   const Rate2 = Data.glucoseHistory[Data.glucoseHistory.length-1];;
   const Rate = Rate2.y-Rate1.y;
   //const Rate = 20;
+  // Based on Rate change, display different degree arrows
   if (Rate < -10) {
     angle = 85; // Dropping fast glucose, point down
   } else if (-10 <= Rate && Rate < -5) {
