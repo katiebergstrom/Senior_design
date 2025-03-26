@@ -62,28 +62,30 @@ function useBLE(): BluetoothLowEnergyApi {
   const [longGlucoseHistory, setLongGlucoseHistory] = useState<{ x: string; y: number }[]>([]);
   const [batteryStatus, setBatteryStatus] = useState<string>("");
 
+  // requests that allow app to use an android device's location for BLE
   const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
       {
         title: "Location Permission",
-        message: "Bluetooth Low Energy requires Location",
+        message: "Allow app to scan for other Bluetooth devices",
         buttonPositive: "OK",
       }
     );
+  
     const bluetoothConnectPermission = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
       {
-        title: "Location Permission",
-        message: "Bluetooth Low Energy requires Location",
+        title: "BLE Permission",
+        message: "Allow app to use Bluetooth Low Energy",
         buttonPositive: "OK",
       }
     );
     const fineLocationPermission = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       {
-        title: "Location Permission",
-        message: "Bluetooth Low Energy requires Location",
+        title: "Scanning Permission",
+        message: "Allow app to connect to other Bluetooth devices",
         buttonPositive: "OK",
       }
     );
@@ -97,6 +99,7 @@ function useBLE(): BluetoothLowEnergyApi {
 
   const requestPermissions = async () => {
     if (Platform.OS === "android") {
+      // For Android versions < 31, only ACCESS_FINE_LOCATION is needed
       if ((ExpoDevice.platformApiLevel ?? -1) < 31) {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -108,12 +111,14 @@ function useBLE(): BluetoothLowEnergyApi {
         );
         return granted === PermissionsAndroid.RESULTS.GRANTED;
       } else {
+         // Android 31+ needs additional permissions
         const isAndroid31PermissionsGranted =
           await requestAndroid31Permissions();
 
         return isAndroid31PermissionsGranted;
       }
-    } else {
+    } else 
+    // iOS does not require explicit permission requests for BLE
       return true;
     }
   };
@@ -277,10 +282,11 @@ function useBLE(): BluetoothLowEnergyApi {
     setLongGlucoseHistory([]);
   };
 
-
+// prevents duplicate devices from being added to the device list
   const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
     devices.findIndex((device) => nextDevice.id === device.id) > -1;
 
+// Scans for Bluetooth devices and filters devices with "Gluco" in their name.
   const scanForPeripherals = () =>
     bleManager.startDeviceScan(null, null, (error, device) => {
       if (error) {
@@ -295,7 +301,7 @@ function useBLE(): BluetoothLowEnergyApi {
         });
       }
     });
-
+// Establishes a connection to a selected BLE device.
   const connectToDevice = async (device: Device) => {
     try {
       const deviceConnection = await bleManager.connectToDevice(device.id);
@@ -310,7 +316,7 @@ function useBLE(): BluetoothLowEnergyApi {
       logEvent(`Failed to connect to device: ${device.name}`);
     }
   };
-
+// Disconnects from the currently connected device.
   const disconnectFromDevice = () => {
     if (connectedDevice) {
       bleManager.cancelDeviceConnection(connectedDevice.id);
@@ -370,7 +376,13 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
   
-
+// processes real-time glucose rate updates received from a BLE device:
+    // Receives and decodes BLE data from a characteristic.
+    // Parses the data into time, glucose level, and battery status.
+    // Updates state variables to store the latest glucose readings.
+    // Appends data to a file and saves it to a database.
+    // Maintains a history of glucose readings for graph visualization.
+    // Monitors the BLE characteristic for continuous updates.
   const onglucoseRateUpdate = (
     error: BleError | null,
     characteristic: Characteristic | null
