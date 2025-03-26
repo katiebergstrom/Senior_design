@@ -62,17 +62,17 @@ function useBLE(): BluetoothLowEnergyApi {
   const [longGlucoseHistory, setLongGlucoseHistory] = useState<{ x: string; y: number }[]>([]);
   const [batteryStatus, setBatteryStatus] = useState<string>("");
 
-  // requests that allow app to use an android device's location for BLE
+  // request that allows app to use an android device to scan for other BLE devices
   const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
       {
-        title: "Location Permission",
+        title: "Scanning Permission",
         message: "Allow app to scan for other Bluetooth devices",
         buttonPositive: "OK",
       }
     );
-  
+  // request that allows app to use an android device's BLE
     const bluetoothConnectPermission = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
       {
@@ -81,10 +81,11 @@ function useBLE(): BluetoothLowEnergyApi {
         buttonPositive: "OK",
       }
     );
+    // request that allows app to use an android device's location for BLE
     const fineLocationPermission = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       {
-        title: "Scanning Permission",
+        title: "Location Permission",
         message: "Allow app to connect to other Bluetooth devices",
         buttonPositive: "OK",
       }
