@@ -77,8 +77,8 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   appLogo: {
-    width: 100,  
-    height: 40, 
+    width: 300,  
+    height: 100, 
     resizeMode: 'contain',
     marginLeft: 16,
   }
