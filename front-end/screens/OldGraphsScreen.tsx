@@ -4,7 +4,9 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import { Picker } from '@react-native-picker/picker';
 import useBLE from '../useBLE';
-import DailyGraphComponent from '../components/DailyGraphComponent'
+import DailyGraphComponent from '../components/DailyGraphComponent';
+import SixHourGraphComponent from '../components/SixHourGraphComponent';
+import TwelveHourGraphComponent from '../components/TwelveHourGraphComponent';
 import RNFS from "react-native-fs";
 import { readDataFromFile } from '../src/functions/readFileData'
 import glucoseJson from "../assets/data/glucose_data_new.json";
@@ -50,13 +52,17 @@ const OldGraphsScreen: React.FC<Props> = ({ navigation }) => {
 
   //Function to render the appropriate graph based on the selected time period
   const renderGraph = () => {
+    let dataToDisplay = glucoseData;
     switch (selectedGraph) {
-      case "daily":
-        return <DailyGraphComponent data={glucoseData} />;
-      case "weekly":
-        return <DailyGraphComponent data={glucoseData} />;
-      case "monthly":
-        return <DailyGraphComponent data={glucoseData} />;
+      case "24hour":
+        dataToDisplay = glucoseData.slice(-288);
+        return <DailyGraphComponent data={dataToDisplay} />;
+      case "12hour":
+        dataToDisplay = glucoseData.slice(-144);
+        return <TwelveHourGraphComponent data={dataToDisplay} />;
+      case "6hour":
+        dataToDisplay = glucoseData.slice(-72);
+        return <SixHourGraphComponent data={dataToDisplay} />;
       default:
         return <Text>Select a valid time period.</Text>;
     }
@@ -73,9 +79,9 @@ const OldGraphsScreen: React.FC<Props> = ({ navigation }) => {
         onValueChange={(itemValue) => setSelectedGraph(itemValue)}
         style={styles.picker}
       >
-        <Picker.Item label="Daily" value="daily" />
-        <Picker.Item label="Weekly" value="weekly" />
-        <Picker.Item label="Monthly" value="monthly" />
+        <Picker.Item label="Last 24 Hours" value="24hour" />
+        <Picker.Item label="Last 12 Hours" value="12hour" />
+        <Picker.Item label="Last 6 Hours" value="6hour" />
       </Picker>
 
       {/* Debugger output to see if entries loaded from json file */}
