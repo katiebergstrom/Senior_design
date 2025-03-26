@@ -55,6 +55,8 @@ const App = () => {
     loadGlucoseData();
   }, []);
 
+  // Requests necessary BLE permissions by calling requestPermissions().
+  // If permissions are granted, it starts scanning for nearby BLE devices using scanForPeripherals().
   const scanForDevices = async () => {
     const isPermissionsEnabled = await requestPermissions();
     if (isPermissionsEnabled) {
@@ -65,7 +67,8 @@ const App = () => {
   const hideModal = () => {
     setIsModalVisible(false);
   };
-
+  
+ // Calls scanForDevices() to start scanning for BLE devices.
   const openModal = async () => {
     scanForDevices();
     setIsModalVisible(true);
