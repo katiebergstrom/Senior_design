@@ -18,7 +18,7 @@ const convertTimeToSec = (timeStr : string): number => {
   return hours * 3600 + minutes * 60 + seconds;
 };
 
-const TIME_WINDOW = 86400; // Show 1 day worth of data
+const TIME_WINDOW = 43200; // Show 6 hours worth of data
 
 const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
 
@@ -30,13 +30,9 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
   ).filter(entry => !isNaN(entry.x));
 
   const averagedData = [];
-  for (let i = 0; i < processedData.length - 1; i += 8) {
-    const avgX = (processedData[i].x + processedData[i + 1].x + processedData[i + 2].x + processedData[i + 3].x + 
-      processedData[i + 4].x + processedData[i + 5].x + processedData[i + 6].x + processedData[i + 7].x
-    ) / 8;
-    const avgY = (processedData[i].y + processedData[i + 1].y + processedData[i + 2].y + processedData[i + 3].y + 
-      processedData[i + 4].y + processedData[i + 5].y + processedData[i + 6].y + processedData[i + 7].y
-    ) / 8;
+  for (let i = 0; i < processedData.length - 1; i += 4) {
+    const avgX = (processedData[i].x + processedData[i + 1].x + processedData[i + 2].x + processedData[i + 3].x) / 4;
+    const avgY = (processedData[i].y + processedData[i + 1].y + processedData[i + 2].y + processedData[i + 3].y) / 4;
     averagedData.push({ x: avgX, y: avgY });
   }
 
