@@ -10,12 +10,13 @@ import {
 } from "react-native";
 import { Device } from "react-native-ble-plx";
 
+// list that stores all BLE devices in range
 type DeviceModalListItemProps = {
   item: ListRenderItemInfo<Device>;
   connectToPeripheral: (device: Device) => void;
   closeModal: () => void;
 };
-
+// turns all BLE devices in range into a specific DEVICE type
 type DeviceModalProps = {
   devices: Device[];
   visible: boolean;
@@ -26,6 +27,7 @@ type DeviceModalProps = {
 const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
   const { item, connectToPeripheral, closeModal } = props;
 
+  // connects to clicked on device and returns to graph screen
   const connectAndCloseModal = useCallback(() => {
     connectToPeripheral(item.item);
     closeModal();
@@ -44,6 +46,7 @@ const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
 const DeviceModal: FC<DeviceModalProps> = (props) => {
   const { devices, visible, connectToPeripheral, closeModal } = props;
 
+  // lists all of the BLE devices in range as a button
   const renderDeviceModalListItem = useCallback(
     (item: ListRenderItemInfo<Device>) => {
       return (
