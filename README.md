@@ -41,4 +41,11 @@ The graph history page is stored in screens/OldGraphsScreen.tsx. The OldGraphsSc
 * The first thing this screen does is import the json file which has glucose readings every five minutes from the past 7 days. We import the file from '/assets/data/glucose_data_new.json' and call function copyJsonToFileSystem
 * copyJsonToFileSystem function is responsible for copying the imported json file over to a local location stored in the app. This way we are able to read the data from the app in order to display it in the graphs. Basically had to copy the file over to get this part to work with React Native
 * Then in the screen setup we have two variables. selectedGraph keeps track of which graph is selected by the dropdown. glucoseData is the data read from the file we just copied over to the app
-* 
+* In the useEffect the glucoseData is set to the data that is read from the json file
+* renderGraph function is responsible for pulling up the corresponding graph to the time period selected by the user in the drop down. Since glucose readings in the json file are every five minutes, the number of points sent over to each graph is hardcoded to pull as many points as we would need to cover that time. For example, only the latest 72 points are sent over to the 6 hour graph, since 5 * 72 = 6 * 60
+
+### How Each Graph Calculates Average
+* For the 6 hour time graph, no average between points is calculated because it only displays 72 points
+* For the 12 hour graph, we calculate the average between every two points. Since the latest 144 are sent over, this means this graph also displays 72 points. The average is calculated with a simple for loop that averages every two points and adds that average to averagedData list. This is the data that is then displayed on the graph
+* The 24 hour graph works the exact same way as the 12 hour one, but the average is taken between every four points. Once again this will display a total of 72 points and the for loop works the same way
+* If reading were instead taken every 3 minutes - you would need to send over 120 points for the last six hours, 240 points for the last 12 hours, and 480 points for the last 24 hours. You could structure calculating the average the same way as before. For the 6 hour graph you could take the exact same loop I have in the 12 hour time graph to calculate the average between every 2 points to display a total of 60 points. Then for the 12 hour graph I would average between every 4 points and for the 24 hour graph average between every 8 points
