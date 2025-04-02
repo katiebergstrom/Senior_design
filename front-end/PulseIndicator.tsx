@@ -1,3 +1,4 @@
+// the code on this page handles calculating the rate of glucose change for the arrow 
 import React, { useState, useEffect } from "react";
 import {
   Canvas,
