@@ -34,7 +34,7 @@ interface BluetoothLowEnergyApi {
   requestStoragePermissions(): Promise<boolean>;
   getSdCardPath(): Promise<string | null>;
   scanForPeripherals(): void;
-  transmitData: (device: Device, action: 'start' | 'disconnect') => Promise<void>;
+  transmitData: (device: Device, action: 'start' | 'read' | 'disconnect') => Promise<void>;
   connectToDevice: (deviceId: Device) => Promise<void>;
   disconnectFromDevice: () => void;
   initDB: () => void;
@@ -447,7 +447,7 @@ function useBLE(): BluetoothLowEnergyApi {
   };
 
   //Function to send codes to device
-  const transmitData = async (device: Device, action: 'start' | 'disconnect') => {
+  const transmitData = async (device: Device, action: 'start' | 'read' | 'disconnect') => {
     if (device && connectedDevice) {
       try {
         let code: string;
@@ -455,13 +455,15 @@ function useBLE(): BluetoothLowEnergyApi {
         // Writing data to the characteristic
         if (action === 'start') {
           currentDate = Math.floor(Date.now() / 1000) - 18000;
-          //console.log("Current date: ", currentDate)
+          console.log("Current date: ", currentDate)
           code = "1113" + "/" + currentDate;
-          //code = "2025/02/02/04/30"
           console.log(code);
           //code = STOP_ALIGNMENT + "/" + currentDate;
           //also need to send 1110 here and send timestamp as soon as app starts
           //
+        }
+        else if (action == 'read') {
+          code = '1110';
         }
         else if (action === 'disconnect') {
           code = DISCONNECT_BLE;
