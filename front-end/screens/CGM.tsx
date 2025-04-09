@@ -20,20 +20,14 @@ const App = () => {
   const {
     requestPermissions,
     scanForPeripherals,
-    requestStoragePermissions,
-    getSdCardPath,
     allDevices,
     connectToDevice,
     connectedDevice,
     glucoseRate,
     glucoseHistory,
     disconnectFromDevice,
-    saveDataToDB,
     readDataFromDB,
-    appendDataToFile,
-    readDataFromFile, 
     transmitData,
-    clearFileContents,
     exportFileToSDCard,
     clearDatabase,
     batteryStatus
@@ -86,11 +80,36 @@ const App = () => {
   //Connected to button below to transmit data to board to read glucose levels
   const handleStartReading = (event: GestureResponderEvent) => {
     if (connectedDevice) {
-      transmitData(connectedDevice, 'start').catch((error) => console.log("Error transmitting data:", error));
+      transmitData(connectedDevice, 'read').catch((error) => console.log("Error transmitting data:", error));
     } else {
       console.log("No device connected");
     }
   };
+
+  const handleConnectDisconnect = async () => {
+    if (connectedDevice) {
+      try {
+        await transmitData(connectedDevice, 'disconnect');
+        await disconnectFromDevice();
+      }
+      catch (error) {
+        console.log("Error disconnecting", error);
+      }
+    }
+    else {
+      openModal();
+    }
+  };
+
+  useEffect(() => {
+    if (connectedDevice) {
+      const transmissionTimeout = setTimeout(() => {
+        transmitData(connectedDevice, 'start').catch((error) =>
+        console.log("Error starting transmission", error));
+      }, 3000);
+      return () => clearTimeout(transmissionTimeout);
+    }
+  }, [connectedDevice]);
 
   //This function will export the file to SD card for the button on screen
   const handleExportFile = async () => {
@@ -131,7 +150,7 @@ const App = () => {
 
         {/* Button to connect or disconnect based on device connection */}
       <TouchableOpacity
-        onPress={connectedDevice ? disconnectFromDevice : openModal}
+        onPress={handleConnectDisconnect}
         style={styles.ctaButton}
       >
         <Text style={styles.ctaButtonText}>

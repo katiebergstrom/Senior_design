@@ -34,7 +34,7 @@ interface BluetoothLowEnergyApi {
   requestStoragePermissions(): Promise<boolean>;
   getSdCardPath(): Promise<string | null>;
   scanForPeripherals(): void;
-  transmitData: (device: Device, action: 'start' | 'disconnect') => Promise<void>;
+  transmitData: (device: Device, action: 'start' | 'read' | 'disconnect') => Promise<void>;
   connectToDevice: (deviceId: Device) => Promise<void>;
   disconnectFromDevice: () => void;
   initDB: () => void;
@@ -161,6 +161,7 @@ function useBLE(): BluetoothLowEnergyApi {
   };
 
   //Function to get the location of the SD card so we can write to it
+  //not sure we need this
   const getSdCardPath = async () => {
     try {
         const externalStorageDirs = await RNFS.getAllExternalFilesDirs();
@@ -405,7 +406,7 @@ function useBLE(): BluetoothLowEnergyApi {
 
     //Split up data received back from the board
     const parts = rawData.split('/');
-    if (parts.length < 4) {
+    if (parts.length < 3) {
       console.log("Invalid data format");
       return;
     }
@@ -414,7 +415,7 @@ function useBLE(): BluetoothLowEnergyApi {
     const time = parts[0];
     const glucoseLevel = +parts[1];
     const batteryLevel = parts[2];
-    const errorCode = parts[3];
+    //const errorCode = parts[3];
 
     //Separate new data to append to file and save to database
     const newData = { time, glucoseLevel, batteryLevel }
@@ -459,7 +460,7 @@ function useBLE(): BluetoothLowEnergyApi {
   };
 
   //Function to send codes to device
-  const transmitData = async (device: Device, action: 'start' | 'disconnect') => {
+  const transmitData = async (device: Device, action: 'start' | 'read' | 'disconnect') => {
     if (device && connectedDevice) {
       try {
         let code: string;
@@ -468,8 +469,14 @@ function useBLE(): BluetoothLowEnergyApi {
         if (action === 'start') {
           currentDate = Math.floor(Date.now() / 1000) - 18000;
           console.log("Current date: ", currentDate)
-          code = currentDate + "/" + STOP_ALIGNMENT;
+          code = "1113" + "/" + currentDate;
+          console.log(code);
           //code = STOP_ALIGNMENT + "/" + currentDate;
+          //also need to send 1110 here and send timestamp as soon as app starts
+          //
+        }
+        else if (action == 'read') {
+          code = '1110';
         }
         else if (action === 'disconnect') {
           code = DISCONNECT_BLE;

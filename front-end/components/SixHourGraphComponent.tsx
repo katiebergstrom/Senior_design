@@ -67,13 +67,13 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
         <VictoryScatter
             style={{ data: { fill: "#c43a31" } }} // Color for the points
             size={4} // Size of each point
-            data={averagedData}
+            data={processedData}
           />
 
           {/* Set y axis label and spacing */}
           <VictoryAxis
             dependentAxis
-            label="Glucose Rate (mg/dL)"
+            label="Glucose Level (mg/dL)"
             style={{ 
               axisLabel: { padding: 38 },  
               tickLabels: { padding: 0 },  

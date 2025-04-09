@@ -22,17 +22,17 @@ const TIME_WINDOW = 43200; // Show 6 hours worth of data
 
 const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
 
-  //THIS NEEDS TO BE FIXED, probably only take last x number of data points
   const processedData = data.map(entry => ({
     x : convertTimeToSec(entry.x),
     y : entry.y
   })
   ).filter(entry => !isNaN(entry.x));
 
+  // Right now this is displaying 72 points, by averaging every two together
   const averagedData = [];
-  for (let i = 0; i < processedData.length - 1; i += 4) {
-    const avgX = (processedData[i].x + processedData[i + 1].x + processedData[i + 2].x + processedData[i + 3].x) / 4;
-    const avgY = (processedData[i].y + processedData[i + 1].y + processedData[i + 2].y + processedData[i + 3].y) / 4;
+  for (let i = 0; i < processedData.length - 1; i += 2) {
+    const avgX = (processedData[i].x + processedData[i + 1].x) / 2;
+    const avgY = (processedData[i].y + processedData[i + 1].y) / 2;
     averagedData.push({ x: avgX, y: avgY });
   }
 

@@ -70,7 +70,7 @@ const OldGraphsScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Old Data</Text>
+      <Text style={styles.title}>Data History</Text>
       <Text>Select a time period:</Text>
 
       {/* Dropdown Picker */}
@@ -84,16 +84,13 @@ const OldGraphsScreen: React.FC<Props> = ({ navigation }) => {
         <Picker.Item label="Last 6 Hours" value="6hour" />
       </Picker>
 
-      {/* Debugger output to see if entries loaded from json file */}
-      <View>
-        <Text>Data loaded: {glucoseData.length} entries</Text>
-      </View>
-
       {/* Render Selected Graph */}
       <View style={styles.graphContainer}>{renderGraph()}</View>
     </View>
   );
 };
+
+//Add labeling about colors representing which ranges (good, low, high)
 
 const styles = StyleSheet.create({
   container: {

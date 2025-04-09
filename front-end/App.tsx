@@ -29,7 +29,7 @@ const App: React.FC = () => {
     // Include all necessary screens in navigation for 3 bar icon
     <NavigationContainer>
       {/* Start the app on the profile screen */}
-      <Drawer.Navigator initialRouteName="Profile">
+      <Drawer.Navigator initialRouteName="CGM">
         <Drawer.Screen 
           name="Profile" 
           component={ProfileScreen} 
