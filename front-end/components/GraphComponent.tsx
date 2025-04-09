@@ -17,7 +17,7 @@ const convertTimeToSec = (timeStr : string): number => {
   return hours * 3600 + minutes * 60 + seconds;
 };
 
-const TIME_WINDOW = 120; // Show 2 minutes worth of data (120 seconds), hardcoded for now
+const TIME_WINDOW = 600; // Show 2 minutes worth of data (120 seconds), hardcoded for now
 
 const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
   const processedData = data.slice(-40).map(entry => ({
@@ -96,12 +96,12 @@ const GlucoseGraph: React.FC<GlucoseGraphProps> = ({ data }) => {
               return ''; 
             }
           }}
-          //Attempt to add label when graph is full indicating current time, this needs to be fixed
-          tickLabelComponent={
-            isGraphFull ? (
-              <VictoryLabel text="Current Time" style={{ fill: "blue", fontSize: 14, fontWeight: "bold" }} />
-            ) : undefined
-          }
+          // //Attempt to add label when graph is full indicating current time, this needs to be fixed
+          // tickLabelComponent={
+          //   isGraphFull ? (
+          //     <VictoryLabel text="Current Time" style={{ fill: "blue", fontSize: 14, fontWeight: "bold" }} />
+          //   ) : undefined
+          // }
         />
       </VictoryChart>
       </View>

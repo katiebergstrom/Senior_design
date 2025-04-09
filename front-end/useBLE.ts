@@ -388,44 +388,46 @@ function useBLE(): BluetoothLowEnergyApi {
     }
     try {
     const rawData = base64.decode(characteristic.value);
-    
+    //console.log("rawData= ", rawData);
+
+    //setglucoseRate(+rawData);
     console.log("rawData= ", rawData);
 
-    //Split up data received back from the board
-    const parts = rawData.split('/');
-    if (parts.length < 3) {
+    const parts = rawData.split("/");
+    if (parts.length > 4) {
       console.log("Invalid data format");
       return;
     }
     
-    //Put split data into appropriate variables
-    const time = parts[0];
+    const epochTime = +parts[0];
+    const time1 = epochTime + 18000;
+
+    const now = new Date(time1 * 1000);
+
+    const timeString = now.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false // use true for AM/PM format
+    });
+
+    console.log(timeString);
+    
     const glucoseLevel = +parts[1];
     const batteryLevel = parts[2];
-    //const errorCode = parts[3];
+    
+    const newData = { time: timeString, glucoseLevel, batteryLevel };
 
-    //Separate new data to append to file and save to database
-    const newData = { time, glucoseLevel, batteryLevel }
     appendDataToFile(newData);
-    saveDataToDB({ time, glucoseLevel, batteryLevel });
+    saveDataToDB({ time: timeString, glucoseLevel, batteryLevel });
 
     setglucoseRate(glucoseLevel);
     setBatteryStatus(batteryLevel);
 
-    //Always slice data to last 40 points for main graph display
     setGlucoseHistory((prev) => {
-      const newDataPoint = { x: time, y: glucoseLevel };
+      const newDataPoint = { x: timeString, y: glucoseLevel };
 
       const updatedHistory = [...prev, newDataPoint].slice(-40);
-
-      return updatedHistory;
-    });
-
-    //Used for graph
-    setLongGlucoseHistory((prev) => {
-      const newDataPoint = { x: time, y: glucoseLevel };
-
-      const updatedHistory = [...prev, newDataPoint]
 
       return updatedHistory;
     });
@@ -454,6 +456,7 @@ function useBLE(): BluetoothLowEnergyApi {
         let currentDate : number;
         // Writing data to the characteristic
         if (action === 'start') {
+          console.log("Current date:", Date.now());
           currentDate = Math.floor(Date.now() / 1000) - 18000;
           console.log("Current date: ", currentDate)
           code = "1113" + "/" + currentDate;
