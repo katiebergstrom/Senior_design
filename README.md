@@ -27,11 +27,11 @@ SD Card
 * Once user hits 'Export file to SD card' button it will invoke handleExportFile function in CGM.tsx. This function then invokes exportFileToSDCard function from useBLE which copies the file over to the defined SD card path
 
 Start Streaming Data
-* Once user hits 'Start streaming' button it will invoke handleStartReading function in CGM.tsx. This function will call transmitData function from useBLE.tsx with 'start' as the second parameter. Once this hits transmitData in useBLE the code for 'start' will be sent to the connected device, and data will start streaming to the main screen.
+* Once user hits 'Start streaming' button it will invoke handleStartReading function in CGM.tsx. This function will call transmitData function from useBLE.tsx with 'start' as the second parameter. Once this hits transmitData in useBLE the code for 'start' will be sent to the connected device, and data will start streaming to the main screen. The code that is sent to the board is in the form '1113/' plus the current epoch date. 
 
 Connecting or Disconnecting from the device
-* If no device is currently connected, the user will see a 'Connect' button.
-* If a device is connected, the user will see a 'Disconnect' button. Once they click this button
+* If no device is currently connected, the user will see a 'Connect' button.  
+* If a device is connected, the user will see a 'Disconnect' button. Once they click this button the handleConnectDisconnect function will be called, which invokes the transmitData function from useBLE.tsx with 'disconnect' as the parameter. In useBLE this function then sends the code '1117'
 
 
 ## Graph History Screens
