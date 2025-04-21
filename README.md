@@ -19,7 +19,7 @@ When the user enters the application they will be brought to the main screen (CG
 * BLUETOOTH FUNCTIONS
 * onglucoseRateUpdate function is where a bulk of the work happens. Whenever a new value is read from the connected device onglucoseRateUpdate function will first handle any errors when reading, and if none are received it will decode the data sent over. Once the data is split up it will be stored in its respective variables and then saved to the database. glucoseRate and batteryStatus variables are set. The latest (x,y) point is added to glucoseHistory list
 * startStreamingData
-* transmitData function is responsible for sending over the correct codes to the board. The function has two possible actions as a parameter that we use to send the correct code over to the board based on whether we want to start streaming data or disconnect from the board. 
+* transmitData function is responsible for sending over the correct codes to the board. The function has three possible actions as a parameter that we use to send the correct code over to the board based on whether we want to connect, start reading data, or disconnect from the board. 
 * exportFileToSDCard function will copy the exisiting file over to the defined SD card path
 
 ### So how do different parts flow through the files?
@@ -27,10 +27,10 @@ SD Card
 * Once user hits 'Export file to SD card' button it will invoke handleExportFile function in CGM.tsx. This function then invokes exportFileToSDCard function from useBLE which copies the file over to the defined SD card path
 
 Start Streaming Data
-* Once user hits 'Start streaming' button it will invoke handleStartReading function in CGM.tsx. This function will call transmitData function from useBLE.tsx with 'start' as the second parameter. Once this hits transmitData in useBLE the code for 'start' will be sent to the connected device, and data will start streaming to the main screen. The code that is sent to the board is in the form '1113/' plus the current epoch date. 
+* Once user hits 'Start streaming' button it will invoke handleStartReading function in CGM.tsx. This function will call transmitData function from useBLE.tsx with 'read' as the second parameter. Once this hits transmitData in useBLE the code for 'read' will be sent to the connected device, and data will start streaming to the main screen. The code that is sent to the board is '1110'. 
 
 Connecting or Disconnecting from the device
-* If no device is currently connected, the user will see a 'Connect' button.  
+* If no device is currently connected, the user will see a 'Connect' button. The useEffect in CGM.tsx will then be called which calls transmitData function in useBLE with 'start' as the parameter. Once this hits transmitData in useBLE the code for 'start' will be sent to the connected device, and data will start streaming to the main screen. The code that is sent to the board is in the form '1113/' plus the current epoch date. 
 * If a device is connected, the user will see a 'Disconnect' button. Once they click this button the handleConnectDisconnect function will be called, which invokes the transmitData function from useBLE.tsx with 'disconnect' as the parameter. In useBLE this function then sends the code '1117'
 
 
