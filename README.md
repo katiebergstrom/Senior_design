@@ -24,7 +24,7 @@ When the user enters the application they will be brought to the main screen (CG
 
 ### So how do different parts flow through the files?
 SD Card
-* Once user hits 'Export file to SD card' button it will invoke handleExportFile function in CGM.tsx. This function then invokes exportFileToSDCard function from useBLE which copies the file over to the defined SD card path
+* Once user hits 'Export file to SD card' button it will invoke handleExportFile function in CGM.tsx. This function then invokes exportFileToSDCard function from useBLE which copies the file over to the defined SD card path. When the app is first opened it will request storage permissions on the device as well, which allows us to write to the SD card.
 
 Start Streaming Data
 * Once user hits 'Start streaming' button it will invoke handleStartReading function in CGM.tsx. This function will call transmitData function from useBLE.tsx with 'read' as the second parameter. Once this hits transmitData in useBLE the code for 'read' will be sent to the connected device, and data will start streaming to the main screen. The code that is sent to the board is '1110'. 
