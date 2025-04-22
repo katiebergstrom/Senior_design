@@ -16,9 +16,18 @@ When the user enters the application they will be brought to the main screen (CG
 * requestStoragePermissions function purpose is to request the storage permissions on the android device so we are able to write to the SD card
 * getSdCardPath function will get the path of the SD card on the device so that we are able to use that path to write to the SD card
 * DATABASE FUNCTIONS
+* openDB opens a SQLite database named glucose_data.db
+* initDb is used to initialize the database by creating a glucose_data if it doesn't exist and provides columns for id, timestamp, glucoseLevel and deviceid
+* insertData inserts a new record into the glucose_data table with the inputted timestamp, glucoseLevel, and deviceid
+* fetchAllData is used to open a database connection and retrieve all records from the glucose_data table. It then logs them to the console and returns the data
 * BLUETOOTH FUNCTIONS
+* isDuplicateDevice checks if a device already exists and returns true if a match is found
+* connectToDevice attempts to establish a Bluetooth connection with a given device, discovers its services and characteristics, and then starts streaming data
+* disconnectFromDevice disconnects the current connected Bluetooth device, clears the device state, and resets the glucose rate to 0
+* appendDataToFile adds a new data entry to a JSON file. It checks if a file exists and then appends the new data and writes the updated array back to the file 
+* readDataFromFile reads glucose data from a file and formats it into {x: time, y: glucose level} pairs and then updates the glucose history
 * onglucoseRateUpdate function is where a bulk of the work happens. Whenever a new value is read from the connected device onglucoseRateUpdate function will first handle any errors when reading, and if none are received it will decode the data sent over. Once the data is split up it will be stored in its respective variables and then saved to the database. glucoseRate and batteryStatus variables are set. The latest (x,y) point is added to glucoseHistory list
-* startStreamingData
+* startStreamingData starts monitoring a Bluetooth device's glucose characteristic. If a device is connected, it uses monitorCharacteristicForService to listen for updates; otherwise it returns that no device is connected
 * transmitData function is responsible for sending over the correct codes to the board. The function has three possible actions as a parameter that we use to send the correct code over to the board based on whether we want to connect, start reading data, or disconnect from the board. 
 * exportFileToSDCard function will copy the exisiting file over to the defined SD card path
 
